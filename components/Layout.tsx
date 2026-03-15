@@ -5,6 +5,7 @@ import {
   ShieldAlert, 
   FileText, 
   Users, 
+  Building2,
   Settings, 
   Search, 
   Bell, 
@@ -35,6 +36,7 @@ export const Layout: React.FC = () => {
         { name: 'Activity Log', path: '/activity', icon: Activity },
         { name: 'Policies', path: '/policies', icon: ShieldAlert },
         { name: 'Users', path: '/users', icon: Users, badge: '8' },
+        { name: 'Departments', path: '/departments', icon: Building2 },
       ]
     },
     {

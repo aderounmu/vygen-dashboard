@@ -12,19 +12,29 @@ export enum ActionType {
   BLOCK = 'BLOCK'
 }
 
-export enum UserRole {
-  ADMIN = 'ADMIN',
-  SECURITY = 'SECURITY',
-  EXECUTIVE = 'EXECUTIVE',
-  USER = 'USER'
+export enum Permission {
+  VIEW_DASHBOARD = 'VIEW_DASHBOARD',
+  VIEW_ACTIVITY = 'VIEW_ACTIVITY',
+  MANAGE_USERS = 'MANAGE_USERS',
+  MANAGE_POLICIES = 'MANAGE_POLICIES',
+  VIEW_REPORTS = 'VIEW_REPORTS',
+  MANAGE_SETTINGS = 'MANAGE_SETTINGS'
+}
+
+export interface Department {
+  id: string;
+  name: string;
+  description: string;
+  permissions: Permission[];
 }
 
 export interface Organization {
   id: string;
   name: string;
   email: string;
-
   reference: string;
+  domain?: string;
+  logo?: string;
 }
 
 export interface User {
@@ -34,8 +44,7 @@ export interface User {
   name: string;
   email: string;
   country: string;
-  role: UserRole;
-  department: string;
+  department: string; // The name of the department (acts as role)
   avatar: string;
   status: 'Active' | 'Inactive';
   organizationId?: string;

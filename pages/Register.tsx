@@ -13,7 +13,6 @@ import {
   Loader2,
   CheckCircle2,
 } from "lucide-react";
-import { UserRole } from "../types";
 import { useRegister } from "@/services/auth/hook";
 import { useCreateBusiness } from "@/services/business/hooks";
 import { toast } from "sonner";
@@ -71,7 +70,6 @@ export const Register: React.FC = () => {
             name: `${savedUserData.first_name} ${savedUserData.last_name}`,
             email: savedUserData.email,
             country: savedUserData.country,
-            role: UserRole.ADMIN,
             department: "ADMIN",
             avatar: "https://picsum.photos/seed/admin/32/32",
             status: "Active",
