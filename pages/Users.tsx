@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useStore } from '../context/Store';
 import { User, UserRole } from '../types';
-import { Plus, Search, MoreHorizontal, Edit2, Trash2, X, Shield, Mail, Briefcase, Check, Settings, Briefcase as BriefcaseIcon } from 'lucide-react';
+import { Plus, Search, Edit2, Trash2, X, Shield, Mail, Check, Settings, Briefcase } from 'lucide-react';
 
 export const Users: React.FC = () => {
   const { state, dispatch } = useStore();
@@ -16,10 +16,12 @@ export const Users: React.FC = () => {
 
   // Form State
   const [formData, setFormData] = useState<Partial<User>>({
-    name: '',
+    firstName: '',
+    lastName: '',
     email: '',
     role: UserRole.USER,
     department: 'Engineering',
+    country: 'NGA',
     status: 'Active'
   });
 
@@ -30,10 +32,12 @@ export const Users: React.FC = () => {
     } else {
       setEditingUser(null);
       setFormData({
-        name: '',
+        firstName: '',
+        lastName: '',
         email: '',
         role: UserRole.USER,
         department: state.departments[0] || 'Unassigned',
+        country: 'NGA',
         status: 'Active'
       });
     }
@@ -58,9 +62,12 @@ export const Users: React.FC = () => {
       // Add new user
       const newUser: User = {
         id: `u-${Date.now()}`,
-        avatar: `https://ui-avatars.com/api/?name=${encodeURIComponent(formData.name || '')}&background=random`,
-        name: formData.name || 'Unknown',
+        avatar: `https://ui-avatars.com/api/?name=${encodeURIComponent(formData.firstName || '')}+${encodeURIComponent(formData.lastName || '')}&background=random`,
+        firstName: formData.firstName || '',
+        lastName: formData.lastName || '',
+        name: `${formData.firstName} ${formData.lastName}`,
         email: formData.email || '',
+        country: formData.country || 'NGA',
         role: formData.role || UserRole.USER,
         department: formData.department || 'General',
         status: formData.status || 'Active'
@@ -75,9 +82,8 @@ export const Users: React.FC = () => {
   };
 
   const handleDelete = (id: string) => {
-    if (window.confirm('Are you sure you want to remove this user? This action cannot be undone.')) {
-      dispatch({ type: 'DELETE_USER', payload: id });
-    }
+    // In a real app, we would use a custom modal
+    dispatch({ type: 'DELETE_USER', payload: id });
   };
 
   // Department Management Handlers
@@ -97,9 +103,8 @@ export const Users: React.FC = () => {
   };
 
   const handleDeleteDept = (deptName: string) => {
-    if (window.confirm(`Delete department "${deptName}"? Users in this department will be moved to "Unassigned".`)) {
-        dispatch({ type: 'DELETE_DEPARTMENT', payload: deptName });
-    }
+    // In a real app, we would use a custom modal
+    dispatch({ type: 'DELETE_DEPARTMENT', payload: deptName });
   };
 
   // Filter users based on global search query
@@ -282,7 +287,7 @@ export const Users: React.FC = () => {
                                     ) : (
                                         <>
                                             <div className="flex items-center">
-                                                <BriefcaseIcon className="w-4 h-4 text-slate-400 mr-3" />
+                                                <Briefcase className="w-4 h-4 text-slate-400 mr-3" />
                                                 <span className="text-sm font-medium text-slate-900 dark:text-white">{dept}</span>
                                             </div>
                                             <div className="flex items-center gap-1">
@@ -342,19 +347,27 @@ export const Users: React.FC = () => {
                     </div>
                     
                     <form onSubmit={handleSubmit} className="p-6 space-y-4">
-                        <div>
-                            <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Full Name</label>
-                            <div className="relative">
-                                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                    <Shield className="h-4 w-4 text-slate-400" />
-                                </div>
+                        <div className="grid grid-cols-2 gap-4">
+                            <div>
+                                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">First Name</label>
                                 <input 
                                     type="text" 
                                     required
-                                    className="block w-full pl-10 pr-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg focus:ring-brand-500 focus:border-brand-500 dark:bg-slate-700 dark:text-white sm:text-sm"
-                                    placeholder="John Doe"
-                                    value={formData.name}
-                                    onChange={(e) => setFormData({...formData, name: e.target.value})}
+                                    className="block w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg focus:ring-brand-500 focus:border-brand-500 dark:bg-slate-700 dark:text-white sm:text-sm"
+                                    placeholder="John"
+                                    value={formData.firstName}
+                                    onChange={(e) => setFormData({...formData, firstName: e.target.value})}
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Last Name</label>
+                                <input 
+                                    type="text" 
+                                    required
+                                    className="block w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg focus:ring-brand-500 focus:border-brand-500 dark:bg-slate-700 dark:text-white sm:text-sm"
+                                    placeholder="Doe"
+                                    value={formData.lastName}
+                                    onChange={(e) => setFormData({...formData, lastName: e.target.value})}
                                 />
                             </div>
                         </div>
@@ -374,6 +387,18 @@ export const Users: React.FC = () => {
                                     onChange={(e) => setFormData({...formData, email: e.target.value})}
                                 />
                             </div>
+                        </div>
+
+                        <div>
+                            <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Country</label>
+                            <input 
+                                type="text" 
+                                required
+                                className="block w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg focus:ring-brand-500 focus:border-brand-500 dark:bg-slate-700 dark:text-white sm:text-sm"
+                                placeholder="NGA"
+                                value={formData.country}
+                                onChange={(e) => setFormData({...formData, country: e.target.value})}
+                            />
                         </div>
 
                         <div className="grid grid-cols-2 gap-4">
