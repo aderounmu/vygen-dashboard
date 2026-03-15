@@ -3,6 +3,8 @@ import { useNavigate, Link } from 'react-router-dom';
 import { useStore } from '../context/Store';
 import { Shield, Lock, Mail, ArrowRight, Loader2 } from 'lucide-react';
 import { UserRole } from '../types';
+import { useLogin } from '@/services/auth/hook';
+import { toast } from 'sonner';
 
 export const Login: React.FC = () => {
   const [email, setEmail] = useState('');
@@ -13,24 +15,20 @@ export const Login: React.FC = () => {
   const { dispatch } = useStore();
   const navigate = useNavigate();
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsLoading(true);
-    setError('');
-
-    // Simulate API call
-    setTimeout(() => {
-      if (email && password) {
-        dispatch({
+  const loginService = useLogin({
+     successFn : (data) => {
+          toast.success("Login Successful")
+          const user = data.data[0].user
+          dispatch({
           type: 'LOGIN',
           payload: {
             user: {
-              id: 'u-admin',
-              firstName: 'Alex',
-              lastName: 'Sentinel',
-              name: 'Alex Sentinel',
-              email: email,
-              country: 'NGA',
+              id: user.id,
+              firstName: user.first_name,
+              lastName: user.last_name,
+              name: `${user.first_name} ${user.last_name}`,
+              email: user.email,
+              country: user.country,
               role: UserRole.ADMIN,
               department: 'Security',
               avatar: 'https://picsum.photos/seed/admin/32/32',
@@ -42,14 +40,60 @@ export const Login: React.FC = () => {
               email: 'contact@vyken.security'
             }
           }
-        });
-        navigate('/');
-      } else {
-        setError('Please enter both email and password');
-      }
-      setIsLoading(false);
-    }, 1000);
-  };
+          });
+          navigate('/');
+     },
+     failureFn: (error) => {
+        const message = ""
+        toast.error(`Login Failed`)
+     }
+  })
+
+
+  // const handleSubmit = async (e: React.FormEvent) => {
+  //   e.preventDefault();
+  //   setIsLoading(true);
+  //   setError('');
+
+  //   // Simulate API call
+  //   setTimeout(() => {
+  //     if (email && password) {
+  //       dispatch({
+  //         type: 'LOGIN',
+  //         payload: {
+  //           user: {
+  //             id: 'u-admin',
+  //             firstName: 'Alex',
+  //             lastName: 'Sentinel',
+  //             name: 'Alex Sentinel',
+  //             email: email,
+  //             country: 'NGA',
+  //             role: UserRole.ADMIN,
+  //             department: 'Security',
+  //             avatar: 'https://picsum.photos/seed/admin/32/32',
+  //             status: 'Active'
+  //           },
+  //           organization: {
+  //             id: 'org-1',
+  //             name: 'Vyken Security',
+  //             email: 'contact@vyken.security'
+  //           }
+  //         }
+  //       });
+  //       navigate('/');
+  //     } else {
+  //       setError('Please enter both email and password');
+  //     }
+  //     setIsLoading(false);
+  //   }, 1000);
+  // };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    await loginService.mutateAsync({
+        email: email,
+        password: password,
+    })
+  }
 
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-slate-900 flex items-center justify-center p-4 font-sans">
@@ -108,10 +152,10 @@ export const Login: React.FC = () => {
 
             <button
               type="submit"
-              disabled={isLoading}
+              disabled={loginService.isPending}
               className="w-full bg-brand-600 hover:bg-brand-700 disabled:bg-brand-400 text-white font-bold py-4 rounded-2xl shadow-lg shadow-brand-500/20 transition-all flex items-center justify-center gap-2 group"
             >
-              {isLoading ? (
+              {loginService.isPending ? (
                 <Loader2 className="w-5 h-5 animate-spin" />
               ) : (
                 <>

@@ -1,0 +1,299 @@
+import {
+  useMutation,
+  useQuery,
+  useQueryClient,
+  UseQueryOptions,
+} from "@tanstack/react-query";
+import { AxiosError } from "axios";
+import api from "../index";
+import { ApiErrorResponse, ApiHookEffect } from "../types";
+import {
+  AssignBusinessRolePermissionsRequest,
+  AssignBusinessRolePermissionsResponse,
+  CreateBusinessMemberRequest,
+  CreateBusinessMemberResponse,
+  CreateBusinessRequest,
+  CreateBusinessResponse,
+  CreateBusinessRoleRequest,
+  CreateBusinessRoleResponse,
+  GetBusinessesResponse,
+  UnassignBusinessRolePermissionsRequest,
+  UnassignBusinessRolePermissionsResponse,
+} from "./types";
+
+/* =========================
+   QUERY KEYS
+========================= */
+
+export const businessQueryKeys = {
+  all: ["business"] as const,
+  lists: () => [...businessQueryKeys.all, "list"] as const,
+  detail: (id: string) => [...businessQueryKeys.all, "detail", id] as const,
+  members: (businessId: string) =>
+    [...businessQueryKeys.all, "members", businessId] as const,
+  roles: (businessId: string) =>
+    [...businessQueryKeys.all, "roles", businessId] as const,
+  role: (businessId: string, roleId: string) =>
+    [...businessQueryKeys.all, "roles", businessId, roleId] as const,
+};
+
+/* =========================
+   API CALLS
+========================= */
+
+export const getBusinesses = async (): Promise<GetBusinessesResponse> => {
+  const response = await api.get<GetBusinessesResponse>("/business");
+  return response.data;
+};
+
+export const createBusiness = async (
+  payload: CreateBusinessRequest
+): Promise<CreateBusinessResponse> => {
+  const response = await api.post<CreateBusinessResponse>("/business", payload);
+  return response.data;
+};
+
+export const createBusinessMember = async (
+  businessId: string,
+  payload: CreateBusinessMemberRequest
+): Promise<CreateBusinessMemberResponse> => {
+  const response = await api.post<CreateBusinessMemberResponse>(
+    `/business/${businessId}/member`,
+    payload
+  );
+  return response.data;
+};
+
+export const createBusinessRole = async (
+  businessId: string,
+  payload: CreateBusinessRoleRequest
+): Promise<CreateBusinessRoleResponse> => {
+  const response = await api.post<CreateBusinessRoleResponse>(
+    `/business/${businessId}/roles`,
+    payload
+  );
+  return response.data;
+};
+
+export const assignBusinessRolePermissions = async (
+  businessId: string,
+  roleId: string,
+  payload: AssignBusinessRolePermissionsRequest
+): Promise<AssignBusinessRolePermissionsResponse> => {
+  const response = await api.post<AssignBusinessRolePermissionsResponse>(
+    `/business/${businessId}/roles/${roleId}/permissions/assign`,
+    payload
+  );
+  return response.data;
+};
+
+export const unassignBusinessRolePermissions = async (
+  businessId: string,
+  roleId: string,
+  payload: UnassignBusinessRolePermissionsRequest
+): Promise<UnassignBusinessRolePermissionsResponse> => {
+  const response = await api.post<UnassignBusinessRolePermissionsResponse>(
+    `/business/${businessId}/roles/${roleId}/permissions/unassign`,
+    payload
+  );
+  return response.data;
+};
+
+/* =========================
+   QUERIES
+========================= */
+
+export const useGetBusinesses = (
+  options?: Omit<
+    UseQueryOptions<GetBusinessesResponse, AxiosError<ApiErrorResponse>>,
+    "queryKey" | "queryFn"
+  >
+) => {
+  return useQuery<GetBusinessesResponse, AxiosError<ApiErrorResponse>>({
+    queryKey: businessQueryKeys.lists(),
+    queryFn: getBusinesses,
+    ...options,
+  });
+};
+
+/* =========================
+   MUTATIONS
+========================= */
+
+export const useCreateBusiness = (
+  effect?: ApiHookEffect<
+    CreateBusinessResponse,
+    CreateBusinessRequest,
+    AxiosError<ApiErrorResponse>
+  >
+) => {
+  const queryClient = useQueryClient();
+
+  return useMutation<
+    CreateBusinessResponse,
+    AxiosError<ApiErrorResponse>,
+    CreateBusinessRequest
+  >({
+    mutationFn: createBusiness,
+    onError: (error, variables, context) => {
+      effect?.failureFn?.(error, variables, context);
+    },
+    onSuccess: async (data, variables, context) => {
+      await queryClient.invalidateQueries({
+        queryKey: businessQueryKeys.lists(),
+      });
+
+      effect?.successFn?.(data, variables, context);
+    },
+  });
+};
+
+export interface CreateBusinessMemberVariables {
+  businessId: string;
+  payload: CreateBusinessMemberRequest;
+}
+
+export const useCreateBusinessMember = (
+  effect?: ApiHookEffect<
+    CreateBusinessMemberResponse,
+    CreateBusinessMemberVariables,
+    AxiosError<ApiErrorResponse>
+  >
+) => {
+  const queryClient = useQueryClient();
+
+  return useMutation<
+    CreateBusinessMemberResponse,
+    AxiosError<ApiErrorResponse>,
+    CreateBusinessMemberVariables
+  >({
+    mutationFn: ({ businessId, payload }) =>
+      createBusinessMember(businessId, payload),
+    onError: (error, variables, context) => {
+      effect?.failureFn?.(error, variables, context);
+    },
+    onSuccess: async (data, variables, context) => {
+      await queryClient.invalidateQueries({
+        queryKey: businessQueryKeys.lists(),
+      });
+
+      effect?.successFn?.(data, variables, context);
+    },
+  });
+};
+
+export interface CreateBusinessRoleVariables {
+  businessId: string;
+  payload: CreateBusinessRoleRequest;
+}
+
+export const useCreateBusinessRole = (
+  effect?: ApiHookEffect<
+    CreateBusinessRoleResponse,
+    CreateBusinessRoleVariables,
+    AxiosError<ApiErrorResponse>
+  >
+) => {
+  const queryClient = useQueryClient();
+
+  return useMutation<
+    CreateBusinessRoleResponse,
+    AxiosError<ApiErrorResponse>,
+    CreateBusinessRoleVariables
+  >({
+    mutationFn: ({ businessId, payload }) =>
+      createBusinessRole(businessId, payload),
+    onError: (error, variables, context) => {
+      effect?.failureFn?.(error, variables, context);
+    },
+    onSuccess: async (data, variables, context) => {
+      await queryClient.invalidateQueries({
+        queryKey: businessQueryKeys.roles(variables.businessId),
+      });
+
+      await queryClient.invalidateQueries({
+        queryKey: businessQueryKeys.lists(),
+      });
+
+      effect?.successFn?.(data, variables, context);
+    },
+  });
+};
+
+export interface AssignBusinessRolePermissionsVariables {
+  businessId: string;
+  roleId: string;
+  payload: AssignBusinessRolePermissionsRequest;
+}
+
+export const useAssignBusinessRolePermissions = (
+  effect?: ApiHookEffect<
+    AssignBusinessRolePermissionsResponse,
+    AssignBusinessRolePermissionsVariables,
+    AxiosError<ApiErrorResponse>
+  >
+) => {
+  const queryClient = useQueryClient();
+
+  return useMutation<
+    AssignBusinessRolePermissionsResponse,
+    AxiosError<ApiErrorResponse>,
+    AssignBusinessRolePermissionsVariables
+  >({
+    mutationFn: ({ businessId, roleId, payload }) =>
+      assignBusinessRolePermissions(businessId, roleId, payload),
+    onError: (error, variables, context) => {
+      effect?.failureFn?.(error, variables, context);
+    },
+    onSuccess: async (data, variables, context) => {
+      await queryClient.invalidateQueries({
+        queryKey: businessQueryKeys.role(variables.businessId, variables.roleId),
+      });
+
+      await queryClient.invalidateQueries({
+        queryKey: businessQueryKeys.roles(variables.businessId),
+      });
+
+      effect?.successFn?.(data, variables, context);
+    },
+  });
+};
+
+export interface UnassignBusinessRolePermissionsVariables {
+  businessId: string;
+  roleId: string;
+  payload: UnassignBusinessRolePermissionsRequest;
+}
+
+export const useUnassignBusinessRolePermissions = (
+  effect?: ApiHookEffect<
+    UnassignBusinessRolePermissionsResponse,
+    UnassignBusinessRolePermissionsVariables,
+    AxiosError<ApiErrorResponse>
+  >
+) => {
+  const queryClient = useQueryClient();
+
+  return useMutation<
+    UnassignBusinessRolePermissionsResponse,
+    AxiosError<ApiErrorResponse>,
+    UnassignBusinessRolePermissionsVariables
+  >({
+    mutationFn: ({ businessId, roleId, payload }) =>
+      unassignBusinessRolePermissions(businessId, roleId, payload),
+    onError: (error, variables, context) => {
+      effect?.failureFn?.(error, variables, context);
+    },
+    onSuccess: async (data, variables, context) => {
+      await queryClient.invalidateQueries({
+        queryKey: businessQueryKeys.role(variables.businessId, variables.roleId),
+      });
+
+      await queryClient.invalidateQueries({
+        queryKey: businessQueryKeys.roles(variables.businessId),
+      });
+
+      effect?.successFn?.(data, variables, context);
+    },
+  });
+};

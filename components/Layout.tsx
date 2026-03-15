@@ -21,6 +21,7 @@ import {
   LogOut
 } from 'lucide-react';
 import { useStore } from '../context/Store';
+import { clearAuthStorage } from '@/services/auth/storage';
 
 export const Layout: React.FC = () => {
   const { state, dispatch } = useStore();
@@ -180,7 +181,10 @@ export const Layout: React.FC = () => {
               </button>
 
               <button 
-                onClick={() => dispatch({ type: 'LOGOUT' })}
+                onClick={() => {
+                  clearAuthStorage()
+                  dispatch({ type: 'LOGOUT' })
+                }}
                 className="p-2.5 text-slate-500 hover:text-red-600 dark:text-slate-400 dark:hover:text-red-400 rounded-full hover:bg-white dark:hover:bg-slate-800 transition-all"
                 title="Logout"
               >

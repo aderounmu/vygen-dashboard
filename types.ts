@@ -23,6 +23,8 @@ export interface Organization {
   id: string;
   name: string;
   email: string;
+
+  reference: string;
 }
 
 export interface User {
