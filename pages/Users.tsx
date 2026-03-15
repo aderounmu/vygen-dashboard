@@ -1,25 +1,18 @@
 import React, { useState } from 'react';
 import { useStore } from '../context/Store';
-import { User, UserRole } from '../types';
-import { Plus, Search, Edit2, Trash2, X, Shield, Mail, Check, Settings, Briefcase } from 'lucide-react';
+import { User } from '../types';
+import { Plus, Search, Edit2, Trash2, X, Shield, Mail, Check, Briefcase } from 'lucide-react';
 
 export const Users: React.FC = () => {
   const { state, dispatch } = useStore();
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [isDeptModalOpen, setIsDeptModalOpen] = useState(false);
   const [editingUser, setEditingUser] = useState<User | null>(null);
   
-  // Department Management State
-  const [editingDept, setEditingDept] = useState<string | null>(null);
-  const [newDeptName, setNewDeptName] = useState('');
-  const [tempDeptName, setTempDeptName] = useState('');
-
   // Form State
   const [formData, setFormData] = useState<Partial<User>>({
     firstName: '',
     lastName: '',
     email: '',
-    role: UserRole.USER,
     department: 'Engineering',
     country: 'NGA',
     status: 'Active'
@@ -35,8 +28,7 @@ export const Users: React.FC = () => {
         firstName: '',
         lastName: '',
         email: '',
-        role: UserRole.USER,
-        department: state.departments[0] || 'Unassigned',
+        department: state.departments[0]?.name || 'Unassigned',
         country: 'NGA',
         status: 'Active'
       });
@@ -68,7 +60,6 @@ export const Users: React.FC = () => {
         name: `${formData.firstName} ${formData.lastName}`,
         email: formData.email || '',
         country: formData.country || 'NGA',
-        role: formData.role || UserRole.USER,
         department: formData.department || 'General',
         status: formData.status || 'Active'
       };
@@ -82,29 +73,7 @@ export const Users: React.FC = () => {
   };
 
   const handleDelete = (id: string) => {
-    // In a real app, we would use a custom modal
     dispatch({ type: 'DELETE_USER', payload: id });
-  };
-
-  // Department Management Handlers
-  const handleAddDept = () => {
-    if (newDeptName.trim()) {
-        dispatch({ type: 'ADD_DEPARTMENT', payload: newDeptName.trim() });
-        setNewDeptName('');
-    }
-  };
-
-  const handleUpdateDept = (oldName: string) => {
-    if (tempDeptName.trim() && tempDeptName !== oldName) {
-        dispatch({ type: 'UPDATE_DEPARTMENT', payload: { oldName, newName: tempDeptName.trim() } });
-    }
-    setEditingDept(null);
-    setTempDeptName('');
-  };
-
-  const handleDeleteDept = (deptName: string) => {
-    // In a real app, we would use a custom modal
-    dispatch({ type: 'DELETE_DEPARTMENT', payload: deptName });
   };
 
   // Filter users based on global search query
@@ -121,16 +90,9 @@ export const Users: React.FC = () => {
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
             <h1 className="text-2xl font-bold text-slate-900 dark:text-white">Team Members</h1>
-            <p className="text-slate-500 dark:text-slate-400 mt-1">Manage access and roles for your organization.</p>
+            <p className="text-slate-500 dark:text-slate-400 mt-1">Manage access and departments for your organization.</p>
         </div>
         <div className="flex gap-3">
-             <button 
-                onClick={() => setIsDeptModalOpen(true)}
-                className="inline-flex items-center px-4 py-2 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 hover:bg-slate-50 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 text-sm font-medium rounded-xl transition-colors shadow-sm"
-            >
-                <Settings className="w-4 h-4 mr-2" />
-                Manage Departments
-            </button>
             <button 
             onClick={() => handleOpenModal()}
             className="inline-flex items-center px-4 py-2 bg-brand-600 hover:bg-brand-700 text-white text-sm font-medium rounded-xl transition-colors shadow-sm shadow-brand-200 dark:shadow-none"
@@ -154,11 +116,11 @@ export const Users: React.FC = () => {
          </div>
          <div className="bg-white dark:bg-slate-800 p-4 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm flex items-center justify-between">
             <div>
-                <p className="text-xs font-medium text-slate-500 uppercase">Admins</p>
-                <p className="text-2xl font-bold text-slate-900 dark:text-white">{state.users.filter(u => u.role === UserRole.ADMIN).length}</p>
+                <p className="text-xs font-medium text-slate-500 uppercase">Departments</p>
+                <p className="text-2xl font-bold text-slate-900 dark:text-white">{state.departments.length}</p>
             </div>
             <div className="p-2 bg-purple-50 dark:bg-purple-900/20 rounded-lg text-purple-600">
-                <Shield className="w-5 h-5" />
+                <Briefcase className="w-5 h-5" />
             </div>
          </div>
          <div className="bg-white dark:bg-slate-800 p-4 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm flex items-center justify-between">
@@ -179,7 +141,6 @@ export const Users: React.FC = () => {
                 <thead>
                     <tr className="bg-slate-50 dark:bg-slate-900/50 border-b border-slate-200 dark:border-slate-700 text-xs uppercase text-slate-500 font-semibold tracking-wider">
                         <th className="px-6 py-4">User</th>
-                        <th className="px-6 py-4">Role</th>
                         <th className="px-6 py-4">Department</th>
                         <th className="px-6 py-4">Status</th>
                         <th className="px-6 py-4 text-right">Actions</th>
@@ -198,18 +159,9 @@ export const Users: React.FC = () => {
                                 </div>
                             </td>
                             <td className="px-6 py-4">
-                                <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border ${
-                                    user.role === UserRole.ADMIN 
-                                        ? 'bg-purple-50 text-purple-700 border-purple-200 dark:bg-purple-900/30 dark:text-purple-300 dark:border-purple-800' 
-                                        : user.role === UserRole.SECURITY
-                                        ? 'bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-900/30 dark:text-blue-300 dark:border-blue-800'
-                                        : 'bg-slate-100 text-slate-700 border-slate-200 dark:bg-slate-800 dark:text-slate-300 dark:border-slate-700'
-                                }`}>
-                                    {user.role}
+                                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-900/30 dark:text-blue-300 dark:border-blue-800">
+                                    {user.department}
                                 </span>
-                            </td>
-                            <td className="px-6 py-4 text-sm text-slate-600 dark:text-slate-300">
-                                {user.department}
                             </td>
                             <td className="px-6 py-4">
                                 <div className="flex items-center">
@@ -247,93 +199,6 @@ export const Users: React.FC = () => {
         )}
       </div>
 
-      {/* Department Management Modal */}
-      {isDeptModalOpen && (
-        <div className="fixed inset-0 z-[60] overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true">
-            <div className="flex items-center justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:block sm:p-0">
-                <div 
-                    className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm transition-opacity" 
-                    onClick={() => setIsDeptModalOpen(false)}
-                ></div>
-                
-                {/* This element is to trick the browser into centering the modal contents. */}
-                <span className="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
-                
-                <div className="relative inline-block align-bottom bg-white dark:bg-slate-800 rounded-2xl text-left overflow-hidden shadow-2xl transform transition-all sm:my-8 sm:align-middle sm:max-w-md w-full z-10 border border-slate-200 dark:border-slate-700">
-                    <div className="px-6 py-5 border-b border-slate-200 dark:border-slate-700 flex justify-between items-center bg-slate-50 dark:bg-slate-900/50">
-                        <h3 className="text-lg leading-6 font-bold text-slate-900 dark:text-white">
-                            Manage Departments
-                        </h3>
-                        <button onClick={() => setIsDeptModalOpen(false)} className="text-slate-400 hover:text-slate-500 transition-colors">
-                            <X className="w-5 h-5" />
-                        </button>
-                    </div>
-
-                    <div className="p-6 max-h-[60vh] overflow-y-auto custom-scrollbar">
-                        <div className="space-y-3">
-                            {state.departments.map(dept => (
-                                <div key={dept} className="flex items-center justify-between p-3 bg-slate-50 dark:bg-slate-700/50 rounded-lg border border-slate-100 dark:border-slate-700">
-                                    {editingDept === dept ? (
-                                        <div className="flex-1 flex items-center gap-2">
-                                            <input 
-                                                autoFocus
-                                                type="text" 
-                                                className="block w-full px-2 py-1 text-sm border border-slate-300 dark:border-slate-600 rounded focus:ring-brand-500 focus:border-brand-500 dark:bg-slate-700 dark:text-white"
-                                                value={tempDeptName}
-                                                onChange={(e) => setTempDeptName(e.target.value)}
-                                            />
-                                            <button onClick={() => handleUpdateDept(dept)} className="p-1 text-green-600 hover:bg-green-100 rounded">
-                                                <Check className="w-4 h-4" />
-                                            </button>
-                                            <button onClick={() => setEditingDept(null)} className="p-1 text-red-500 hover:bg-red-100 rounded">
-                                                <X className="w-4 h-4" />
-                                            </button>
-                                        </div>
-                                    ) : (
-                                        <>
-                                            <div className="flex items-center">
-                                                <Briefcase className="w-4 h-4 text-slate-400 mr-3" />
-                                                <span className="text-sm font-medium text-slate-900 dark:text-white">{dept}</span>
-                                            </div>
-                                            <div className="flex items-center gap-1">
-                                                <button onClick={() => { setEditingDept(dept); setTempDeptName(dept); }} className="p-1.5 text-slate-400 hover:text-brand-600 hover:bg-brand-50 rounded transition-colors">
-                                                    <Edit2 className="w-3.5 h-3.5" />
-                                                </button>
-                                                <button onClick={() => handleDeleteDept(dept)} className="p-1.5 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded transition-colors">
-                                                    <Trash2 className="w-3.5 h-3.5" />
-                                                </button>
-                                            </div>
-                                        </>
-                                    )}
-                                </div>
-                            ))}
-                        </div>
-                    </div>
-
-                    <div className="p-4 border-t border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900/50">
-                        <div className="flex gap-2">
-                             <input 
-                                type="text"
-                                placeholder="New Department Name"
-                                className="block w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg focus:ring-brand-500 focus:border-brand-500 dark:bg-slate-700 dark:text-white sm:text-sm"
-                                value={newDeptName}
-                                onChange={(e) => setNewDeptName(e.target.value)}
-                                onKeyDown={(e) => e.key === 'Enter' && handleAddDept()}
-                             />
-                             <button 
-                                onClick={handleAddDept}
-                                disabled={!newDeptName.trim()}
-                                className="inline-flex items-center px-4 py-2 bg-brand-600 text-white text-sm font-medium rounded-lg hover:bg-brand-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                             >
-                                 Add
-                             </button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-      )}
-
       {/* User Modal Form */}
       {isModalOpen && (
         <div className="fixed inset-0 z-[60] overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true">
@@ -343,7 +208,6 @@ export const Users: React.FC = () => {
                     onClick={handleCloseModal}
                 ></div>
                 
-                {/* This element is to trick the browser into centering the modal contents. */}
                 <span className="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
                 
                 <div className="relative inline-block align-bottom bg-white dark:bg-slate-800 rounded-2xl text-left overflow-hidden shadow-2xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg w-full z-10 border border-slate-200 dark:border-slate-700">
@@ -411,32 +275,18 @@ export const Users: React.FC = () => {
                             />
                         </div>
 
-                        <div className="grid grid-cols-2 gap-4">
-                            <div>
-                                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Role</label>
-                                <select 
-                                    className="block w-full pl-3 pr-10 py-2 text-base border border-slate-300 dark:border-slate-600 focus:outline-none focus:ring-brand-500 focus:border-brand-500 sm:text-sm rounded-lg dark:bg-slate-700 dark:text-white"
-                                    value={formData.role || UserRole.USER}
-                                    onChange={(e) => setFormData({...formData, role: e.target.value as UserRole})}
-                                >
-                                    {Object.values(UserRole).map(role => (
-                                        <option key={role} value={role}>{role}</option>
-                                    ))}
-                                </select>
-                            </div>
-                            <div>
-                                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Department</label>
-                                <select 
-                                    className="block w-full pl-3 pr-10 py-2 text-base border border-slate-300 dark:border-slate-600 focus:outline-none focus:ring-brand-500 focus:border-brand-500 sm:text-sm rounded-lg dark:bg-slate-700 dark:text-white"
-                                    value={formData.department || 'Unassigned'}
-                                    onChange={(e) => setFormData({...formData, department: e.target.value})}
-                                >
-                                    {state.departments.map(dept => (
-                                        <option key={dept} value={dept}>{dept}</option>
-                                    ))}
-                                    <option value="Unassigned">Unassigned</option>
-                                </select>
-                            </div>
+                        <div>
+                            <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Department (Role)</label>
+                            <select 
+                                className="block w-full pl-3 pr-10 py-2 text-base border border-slate-300 dark:border-slate-600 focus:outline-none focus:ring-brand-500 focus:border-brand-500 sm:text-sm rounded-lg dark:bg-slate-700 dark:text-white"
+                                value={formData.department || 'Unassigned'}
+                                onChange={(e) => setFormData({...formData, department: e.target.value})}
+                            >
+                                {state.departments.map(dept => (
+                                    <option key={dept.id} value={dept.name}>{dept.name}</option>
+                                ))}
+                                <option value="Unassigned">Unassigned</option>
+                            </select>
                         </div>
 
                         <div>

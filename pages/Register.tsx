@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useStore } from '../context/Store';
 import { Shield, User as UserIcon, Building, Mail, Lock, Globe, ArrowRight, ArrowLeft, Loader2, CheckCircle2 } from 'lucide-react';
-import { UserRole } from '../types';
 
 export const Register: React.FC = () => {
   const [step, setStep] = useState(1);
@@ -47,7 +46,6 @@ export const Register: React.FC = () => {
             name: `${userData.first_name} ${userData.last_name}`,
             email: userData.email,
             country: userData.country,
-            role: UserRole.ADMIN,
             department: 'Executive',
             avatar: `https://picsum.photos/seed/${userData.email}/32/32`,
             status: 'Active'

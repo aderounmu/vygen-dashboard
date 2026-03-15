@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useStore } from '../context/Store';
 import { Shield, Lock, Mail, ArrowRight, Loader2 } from 'lucide-react';
-import { UserRole } from '../types';
 
 export const Login: React.FC = () => {
   const [email, setEmail] = useState('');
@@ -31,7 +30,6 @@ export const Login: React.FC = () => {
               name: 'Alex Sentinel',
               email: email,
               country: 'NGA',
-              role: UserRole.ADMIN,
               department: 'Security',
               avatar: 'https://picsum.photos/seed/admin/32/32',
               status: 'Active'

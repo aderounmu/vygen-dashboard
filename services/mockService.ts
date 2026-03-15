@@ -1,7 +1,39 @@
-import { AIEvent, RiskLevel, ActionType, User, UserRole, Policy } from '../types';
+import { AIEvent, RiskLevel, ActionType, User, Policy, Department, Permission } from '../types';
 
 // Constants for generation
-export const DEPARTMENTS = ['Engineering', 'Finance', 'HR', 'Marketing', 'Sales', 'Executive'];
+export const INITIAL_DEPARTMENTS: Department[] = [
+  {
+    id: 'd1',
+    name: 'Engineering',
+    description: 'Software development and technical operations',
+    permissions: [Permission.VIEW_DASHBOARD, Permission.VIEW_ACTIVITY]
+  },
+  {
+    id: 'd2',
+    name: 'Security',
+    description: 'Security oversight and policy management',
+    permissions: [Permission.VIEW_DASHBOARD, Permission.VIEW_ACTIVITY, Permission.MANAGE_POLICIES, Permission.MANAGE_USERS, Permission.MANAGE_SETTINGS]
+  },
+  {
+    id: 'd3',
+    name: 'Executive',
+    description: 'High-level oversight and reporting',
+    permissions: [Permission.VIEW_DASHBOARD, Permission.VIEW_ACTIVITY, Permission.VIEW_REPORTS]
+  },
+  {
+    id: 'd4',
+    name: 'HR',
+    description: 'Human resources and personnel management',
+    permissions: [Permission.VIEW_DASHBOARD]
+  },
+  {
+    id: 'd5',
+    name: 'Finance',
+    description: 'Financial planning and analysis',
+    permissions: [Permission.VIEW_DASHBOARD, Permission.VIEW_REPORTS]
+  }
+];
+
 const TOOLS = ['ChatGPT', 'Gemini Ultra', 'Claude 3', 'GitHub Copilot', 'Perplexity'];
 const DATA_TYPES = ['None', 'PII', 'Source Code', 'Credentials', 'Financial Data', 'Health Data', 'Internal Strategy'];
 
@@ -27,8 +59,7 @@ export const MOCK_USERS: User[] = Array.from({ length: 20 }).map((_, i) => {
     name,
     email,
     country: 'USA',
-    role: i === 0 ? UserRole.ADMIN : getRandom(Object.values(UserRole)),
-    department: getRandom(DEPARTMENTS),
+    department: getRandom(INITIAL_DEPARTMENTS).name,
     avatar: `https://picsum.photos/seed/u${i}/32/32`,
     status: Math.random() > 0.1 ? 'Active' : 'Inactive'
   };
@@ -41,7 +72,6 @@ export const CURRENT_USER: User = {
   name: 'Alex Sentinel',
   email: 'alex.sentinel@vyken.security',
   country: 'USA',
-  role: UserRole.ADMIN,
   department: 'Security',
   avatar: 'https://picsum.photos/seed/admin/32/32',
   status: 'Active'

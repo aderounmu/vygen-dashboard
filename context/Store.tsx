@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useEffect, useReducer } from 'react';
-import { AIEvent, Policy, User, Notification, UserRole, Organization } from '../types';
-import { CURRENT_USER, INITIAL_EVENTS, MOCK_POLICIES, MOCK_USERS, DEPARTMENTS, MockAPI } from '../services/mockService';
+import { AIEvent, Policy, User, Notification, Organization, Department } from '../types';
+import { CURRENT_USER, INITIAL_EVENTS, MOCK_POLICIES, MOCK_USERS, INITIAL_DEPARTMENTS, MockAPI } from '../services/mockService';
 
 interface AppState {
   user: User | null; // Current logged in user
@@ -9,7 +9,7 @@ interface AppState {
   users: User[]; // List of all users
   events: AIEvent[];
   policies: Policy[];
-  departments: string[];
+  departments: Department[];
   notifications: Notification[];
   isDarkMode: boolean;
   isLoading: boolean;
@@ -29,8 +29,8 @@ type Action =
   | { type: 'ADD_USER'; payload: User }
   | { type: 'UPDATE_USER'; payload: User }
   | { type: 'DELETE_USER'; payload: string }
-  | { type: 'ADD_DEPARTMENT'; payload: string }
-  | { type: 'UPDATE_DEPARTMENT'; payload: { oldName: string; newName: string } }
+  | { type: 'ADD_DEPARTMENT'; payload: Department }
+  | { type: 'UPDATE_DEPARTMENT'; payload: Department }
   | { type: 'DELETE_DEPARTMENT'; payload: string };
 
 const initialState: AppState = {
@@ -40,7 +40,7 @@ const initialState: AppState = {
   users: MOCK_USERS,
   events: INITIAL_EVENTS,
   policies: MOCK_POLICIES,
-  departments: DEPARTMENTS,
+  departments: INITIAL_DEPARTMENTS,
   notifications: [],
   isDarkMode: false,
   isLoading: false,
@@ -98,21 +98,27 @@ const reducer = (state: AppState, action: Action): AppState => {
             users: state.users.filter(u => u.id !== action.payload)
         };
     case 'ADD_DEPARTMENT':
-        if (state.departments.includes(action.payload)) return state;
         return { ...state, departments: [...state.departments, action.payload] };
     case 'UPDATE_DEPARTMENT':
+        // Find the old department to get its name for cascading updates
+        const oldDept = state.departments.find(d => d.id === action.payload.id);
         return {
             ...state,
-            departments: state.departments.map(d => d === action.payload.oldName ? action.payload.newName : d),
-            // Cascade update to users
-            users: state.users.map(u => u.department === action.payload.oldName ? { ...u, department: action.payload.newName } : u)
+            departments: state.departments.map(d => d.id === action.payload.id ? action.payload : d),
+            // Cascade update to users if name changed
+            users: oldDept && oldDept.name !== action.payload.name 
+                ? state.users.map(u => u.department === oldDept.name ? { ...u, department: action.payload.name } : u)
+                : state.users
         };
     case 'DELETE_DEPARTMENT':
+        const deptToDelete = state.departments.find(d => d.id === action.payload);
         return {
             ...state,
-            departments: state.departments.filter(d => d !== action.payload),
+            departments: state.departments.filter(d => d.id !== action.payload),
             // Move users to Unassigned
-            users: state.users.map(u => u.department === action.payload ? { ...u, department: 'Unassigned' } : u)
+            users: deptToDelete 
+                ? state.users.map(u => u.department === deptToDelete.name ? { ...u, department: 'Unassigned' } : u)
+                : state.users
         };
     default:
       return state;
