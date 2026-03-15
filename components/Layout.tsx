@@ -17,7 +17,8 @@ import {
   Shield,
   Zap,
   ChevronRight,
-  ChevronDown
+  ChevronDown,
+  LogOut
 } from 'lucide-react';
 import { useStore } from '../context/Store';
 
@@ -60,13 +61,12 @@ export const Layout: React.FC = () => {
         <div className="h-20 flex items-center px-6">
           <div className="flex items-center gap-2">
             <span className="text-brand-600 dark:text-brand-400">
-               <svg width="32" height="32" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
-                  <path d="M12 2L2 7L12 12L22 7L12 2Z" />
-                  <path d="M2 17L12 22L22 17" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                  <path d="M2 12L12 17L22 12" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-               </svg>
+               <Shield className="w-8 h-8" />
             </span>
-            <span className="text-2xl font-bold tracking-tight text-brand-600 dark:text-white">Nexus</span>
+            <div className="flex flex-col leading-none">
+              <span className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">vyken</span>
+              <span className="text-[10px] font-bold tracking-[0.2em] text-slate-400 uppercase">Security</span>
+            </div>
           </div>
         </div>
 
@@ -127,7 +127,7 @@ export const Layout: React.FC = () => {
            <button className="w-full py-2.5 px-4 bg-white border border-slate-200 text-slate-900 text-sm font-semibold rounded-xl hover:bg-slate-50 transition-colors shadow-sm dark:bg-slate-800 dark:border-slate-700 dark:text-white dark:hover:bg-slate-700">
              Upgrade Plan
            </button>
-           <p className="text-center text-[10px] text-slate-400 mt-3">© 2024 Nexus Inc.</p>
+           <p className="text-center text-[10px] text-slate-400 mt-3">© 2024 Vyken Security Inc.</p>
         </div>
       </aside>
 
@@ -178,17 +178,29 @@ export const Layout: React.FC = () => {
               <button className="p-2.5 text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200 rounded-full hover:bg-white dark:hover:bg-slate-800 transition-all">
                 <PlusCircle className="h-5 w-5" />
               </button>
+
+              <button 
+                onClick={() => dispatch({ type: 'LOGOUT' })}
+                className="p-2.5 text-slate-500 hover:text-red-600 dark:text-slate-400 dark:hover:text-red-400 rounded-full hover:bg-white dark:hover:bg-slate-800 transition-all"
+                title="Logout"
+              >
+                <LogOut className="h-5 w-5" />
+              </button>
             
               <div className="pl-4 flex items-center">
-                 <img 
-                    src={state.user.avatar} 
-                    alt="User" 
-                    className="h-10 w-10 rounded-full border-2 border-white dark:border-slate-800 shadow-sm"
-                  />
-                  <div className="ml-3 hidden md:block">
-                    <p className="text-sm font-bold text-slate-900 dark:text-white leading-none">{state.user.name}</p>
-                    <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">Business</p>
-                  </div>
+                 {state.user && (
+                   <>
+                     <img 
+                        src={state.user.avatar} 
+                        alt="User" 
+                        className="h-10 w-10 rounded-full border-2 border-white dark:border-slate-800 shadow-sm"
+                      />
+                      <div className="ml-3 hidden md:block">
+                        <p className="text-sm font-bold text-slate-900 dark:text-white leading-none">{state.user.name}</p>
+                        <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">{state.organization?.name || 'Business'}</p>
+                      </div>
+                   </>
+                 )}
               </div>
             </div>
         </header>

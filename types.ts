@@ -19,14 +19,24 @@ export enum UserRole {
   USER = 'USER'
 }
 
-export interface User {
+export interface Organization {
   id: string;
   name: string;
   email: string;
+}
+
+export interface User {
+  id: string;
+  firstName: string;
+  lastName: string;
+  name: string;
+  email: string;
+  country: string;
   role: UserRole;
   department: string;
   avatar: string;
   status: 'Active' | 'Inactive';
+  organizationId?: string;
 }
 
 export interface AIEvent {

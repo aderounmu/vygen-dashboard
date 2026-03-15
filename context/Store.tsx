@@ -1,9 +1,11 @@
 import React, { createContext, useContext, useEffect, useReducer } from 'react';
-import { AIEvent, Policy, User, Notification, UserRole } from '../types';
+import { AIEvent, Policy, User, Notification, UserRole, Organization } from '../types';
 import { CURRENT_USER, INITIAL_EVENTS, MOCK_POLICIES, MOCK_USERS, DEPARTMENTS, MockAPI } from '../services/mockService';
 
 interface AppState {
-  user: User; // Current logged in user
+  user: User | null; // Current logged in user
+  organization: Organization | null;
+  isAuthenticated: boolean;
   users: User[]; // List of all users
   events: AIEvent[];
   policies: Policy[];
@@ -15,6 +17,9 @@ interface AppState {
 }
 
 type Action =
+  | { type: 'LOGIN'; payload: { user: User; organization?: Organization } }
+  | { type: 'LOGOUT' }
+  | { type: 'REGISTER'; payload: { user: User; organization: Organization } }
   | { type: 'ADD_EVENT'; payload: AIEvent }
   | { type: 'SET_THEME'; payload: boolean }
   | { type: 'SET_LOADING'; payload: boolean }
@@ -29,7 +34,9 @@ type Action =
   | { type: 'DELETE_DEPARTMENT'; payload: string };
 
 const initialState: AppState = {
-  user: CURRENT_USER,
+  user: null,
+  organization: null,
+  isAuthenticated: false,
   users: MOCK_USERS,
   events: INITIAL_EVENTS,
   policies: MOCK_POLICIES,
@@ -42,6 +49,27 @@ const initialState: AppState = {
 
 const reducer = (state: AppState, action: Action): AppState => {
   switch (action.type) {
+    case 'LOGIN':
+      return { 
+        ...state, 
+        user: action.payload.user, 
+        organization: action.payload.organization || null,
+        isAuthenticated: true 
+      };
+    case 'LOGOUT':
+      return { 
+        ...state, 
+        user: null, 
+        organization: null,
+        isAuthenticated: false 
+      };
+    case 'REGISTER':
+      return { 
+        ...state, 
+        user: action.payload.user, 
+        organization: action.payload.organization,
+        isAuthenticated: true 
+      };
     case 'ADD_EVENT':
       return { ...state, events: [action.payload, ...state.events] };
     case 'SET_THEME':

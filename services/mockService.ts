@@ -9,21 +9,38 @@ const DATA_TYPES = ['None', 'PII', 'Source Code', 'Credentials', 'Financial Data
 const getRandom = <T,>(arr: T[]): T => arr[Math.floor(Math.random() * arr.length)];
 const randomInt = (min: number, max: number) => Math.floor(Math.random() * (max - min + 1)) + min;
 
+// Realistic Name Lists
+const FIRST_NAMES = ['James', 'Sarah', 'Michael', 'Emma', 'David', 'Olivia', 'Robert', 'Sophia', 'William', 'Isabella', 'Joseph', 'Mia', 'Thomas', 'Charlotte', 'Charles', 'Amelia', 'Christopher', 'Evelyn', 'Daniel', 'Abigail'];
+const LAST_NAMES = ['Smith', 'Johnson', 'Williams', 'Brown', 'Jones', 'Garcia', 'Miller', 'Davis', 'Rodriguez', 'Martinez', 'Hernandez', 'Lopez', 'Gonzalez', 'Wilson', 'Anderson', 'Thomas', 'Taylor', 'Moore', 'Jackson', 'Martin'];
+
 // Generate Users
-export const MOCK_USERS: User[] = Array.from({ length: 20 }).map((_, i) => ({
-  id: `u-${i}`,
-  name: `User ${i + 1}`,
-  email: `user${i+1}@nexus.io`,
-  role: i === 0 ? UserRole.ADMIN : getRandom(Object.values(UserRole)),
-  department: getRandom(DEPARTMENTS),
-  avatar: `https://picsum.photos/seed/u${i}/32/32`,
-  status: Math.random() > 0.1 ? 'Active' : 'Inactive'
-}));
+export const MOCK_USERS: User[] = Array.from({ length: 20 }).map((_, i) => {
+  const firstName = FIRST_NAMES[i % FIRST_NAMES.length];
+  const lastName = LAST_NAMES[i % LAST_NAMES.length];
+  const name = `${firstName} ${lastName}`;
+  const email = `${firstName.toLowerCase()}.${lastName.toLowerCase()}@vyken.security`;
+  
+  return {
+    id: `u-${i}`,
+    firstName,
+    lastName,
+    name,
+    email,
+    country: 'USA',
+    role: i === 0 ? UserRole.ADMIN : getRandom(Object.values(UserRole)),
+    department: getRandom(DEPARTMENTS),
+    avatar: `https://picsum.photos/seed/u${i}/32/32`,
+    status: Math.random() > 0.1 ? 'Active' : 'Inactive'
+  };
+});
 
 export const CURRENT_USER: User = {
   id: 'u-admin',
+  firstName: 'Alex',
+  lastName: 'Sentinel',
   name: 'Alex Sentinel',
-  email: 'alex@nexus.io',
+  email: 'alex.sentinel@vyken.security',
+  country: 'USA',
   role: UserRole.ADMIN,
   department: 'Security',
   avatar: 'https://picsum.photos/seed/admin/32/32',
