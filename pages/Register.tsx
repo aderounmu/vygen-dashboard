@@ -95,6 +95,15 @@ export const Register: React.FC = () => {
   const { dispatch } = useStore();
   const navigate = useNavigate();
 
+  const login = localStorage.getItem("sessionId")
+  if(login){
+    dispatch({
+      type: 'SET_AUTHENTICATION',
+      payload: null
+    })
+    navigate('/');
+  }
+
   const handleNext = (e: React.FormEvent) => {
     e.preventDefault();
     setStep(2);

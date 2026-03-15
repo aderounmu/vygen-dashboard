@@ -10,9 +10,8 @@ import { Login } from './pages/Login';
 import { Register } from './pages/Register';
 
 const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const { state } = useStore();
+  const { state, dispatch } = useStore();
   const location = useLocation();
-
   if (!state.isAuthenticated) {
     return <Navigate to="/login" state={{ from: location }} replace />;
   }

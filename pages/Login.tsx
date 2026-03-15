@@ -15,6 +15,16 @@ export const Login: React.FC = () => {
   const { dispatch } = useStore();
   const navigate = useNavigate();
 
+
+  const login = localStorage.getItem("sessionId")
+  if(login){
+    dispatch({
+      type: 'SET_AUTHENTICATION',
+      payload: null
+    })
+    navigate('/');
+  }
+
   const loginService = useLogin({
      successFn : (data) => {
           toast.success("Login Successful")

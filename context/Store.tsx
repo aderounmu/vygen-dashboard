@@ -31,7 +31,8 @@ type Action =
   | { type: 'DELETE_USER'; payload: string }
   | { type: 'ADD_DEPARTMENT'; payload: string }
   | { type: 'UPDATE_DEPARTMENT'; payload: { oldName: string; newName: string } }
-  | { type: 'DELETE_DEPARTMENT'; payload: string };
+  | { type: 'DELETE_DEPARTMENT'; payload: string }
+  | {type: 'SET_AUTHENTICATION'; payload: null};
 
 const initialState: AppState = {
   user: null,
@@ -70,6 +71,7 @@ const reducer = (state: AppState, action: Action): AppState => {
         organization: action.payload.organization,
         isAuthenticated: true 
       };
+    case 'SET_AUTHENTICATION': return {...state, isAuthenticated: true}
     case 'ADD_EVENT':
       return { ...state, events: [action.payload, ...state.events] };
     case 'SET_THEME':
