@@ -1,6 +1,12 @@
-import { AIEvent, RiskLevel, ActionType, User, Policy, Department, Permission } from '../types';
+import { AIEvent, RiskLevel, ActionType, User, Policy, Department, Permission, AIPlatform } from '../types';
 
 // Constants for generation
+export const MOCK_PLATFORMS: AIPlatform[] = [
+  { id: 'ap1', tool_name: 'ChatGPT', domain: 'chat.openai.com', is_allowed: true },
+  { id: 'ap2', tool_name: 'Claude', domain: 'claude.ai', is_allowed: true },
+  { id: 'ap3', tool_name: 'Gemini', domain: 'gemini.google.com', is_allowed: true },
+];
+
 export const INITIAL_DEPARTMENTS: Department[] = [
   {
     id: 'd1',
@@ -91,7 +97,7 @@ const generateEvent = (id: number, dateOverride?: Date): AIEvent => {
 
   const action = riskLevel === RiskLevel.CRITICAL ? ActionType.BLOCK : 
                  riskLevel === RiskLevel.HIGH ? ActionType.WARN : 
-                 riskLevel === RiskLevel.MEDIUM ? ActionType.AUDIT : ActionType.ALLOW;
+                 ActionType.PASS;
 
   const user = getRandom(MOCK_USERS);
   const date = dateOverride || new Date(Date.now() - randomInt(0, 7 * 24 * 60 * 60 * 1000));
@@ -116,9 +122,9 @@ const generateEvent = (id: number, dateOverride?: Date): AIEvent => {
 export const INITIAL_EVENTS: AIEvent[] = Array.from({ length: 200 }).map((_, i) => generateEvent(i)).sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
 
 export const MOCK_POLICIES: Policy[] = [
-  { id: 'p1', name: 'Block Source Code in Public AI', description: 'Prevent proprietary code leakage', conditionDataType: 'Source Code', conditionTool: 'Public', action: ActionType.BLOCK, enabled: true },
-  { id: 'p2', name: 'Warn on PII', description: 'User must acknowledge PII risk', conditionDataType: 'PII', conditionTool: 'Any', action: ActionType.WARN, enabled: true },
-  { id: 'p3', name: 'Audit Finance Queries', description: 'Log all finance dept prompts', conditionDataType: 'Financial Data', conditionTool: 'Any', action: ActionType.AUDIT, enabled: true },
+  { id: 'p1', name: 'NIN Protection', description: 'Block National Identification Number leakage', data_type: 'NIN', action: ActionType.BLOCK, priority: 1, is_enabled: true },
+  { id: 'p2', name: 'PII Warning', description: 'Warn on Personally Identifiable Information', data_type: 'PII', action: ActionType.WARN, priority: 2, is_enabled: true },
+  { id: 'p3', name: 'Financial Data Audit', description: 'Allow financial data with audit', data_type: 'Financial Data', action: ActionType.PASS, priority: 3, is_enabled: true },
 ];
 
 // Service Layer

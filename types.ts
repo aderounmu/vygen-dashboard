@@ -6,10 +6,9 @@ export enum RiskLevel {
 }
 
 export enum ActionType {
-  ALLOW = 'ALLOW',
-  AUDIT = 'AUDIT',
-  WARN = 'WARN',
-  BLOCK = 'BLOCK'
+  PASS = 'pass',
+  WARN = 'warn',
+  BLOCK = 'block'
 }
 
 export enum Permission {
@@ -67,10 +66,10 @@ export interface Policy {
   id: string;
   name: string;
   description: string;
-  conditionDataType: string;
-  conditionTool: string;
+  data_type: string;
   action: ActionType;
-  enabled: boolean;
+  priority: number;
+  is_enabled: boolean;
 }
 
 export interface DashboardMetrics {
@@ -78,6 +77,14 @@ export interface DashboardMetrics {
   sensitivePercentage: number;
   highRiskCount: number;
   preventedLeaks: number;
+}
+
+export interface AIPlatform {
+  id: string;
+  tool_name: string;
+  domain: string;
+  is_allowed: boolean;
+  icon?: string;
 }
 
 export interface Notification {
