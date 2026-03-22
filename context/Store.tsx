@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useEffect, useReducer } from 'react';
-import { AIEvent, Policy, User, Notification, Organization, Department } from '../types';
-import { CURRENT_USER, INITIAL_EVENTS, MOCK_POLICIES, MOCK_USERS, INITIAL_DEPARTMENTS, MockAPI } from '../services/mockService';
+import { AIEvent, Policy, User, Notification, Organization, Department, AIPlatform } from '../types';
+import { CURRENT_USER, INITIAL_EVENTS, MOCK_POLICIES, MOCK_USERS, INITIAL_DEPARTMENTS, MOCK_PLATFORMS, MockAPI } from '../services/mockService';
 
 export interface AppState {
   user: User | null; // Current logged in user
@@ -10,6 +10,7 @@ export interface AppState {
   events: AIEvent[];
   policies: Policy[];
   departments: Department[];
+  platforms: AIPlatform[];
   notifications: Notification[];
   isDarkMode: boolean;
   isLoading: boolean;
@@ -25,7 +26,9 @@ type Action =
   | { type: 'SET_LOADING'; payload: boolean }
   | { type: 'SET_SEARCH'; payload: string }
   | { type: 'ADD_NOTIFICATION'; payload: Notification }
+  | { type: 'ADD_POLICY'; payload: Policy }
   | { type: 'UPDATE_POLICY'; payload: Policy }
+  | { type: 'DELETE_POLICY'; payload: string }
   | { type: 'ADD_USER'; payload: User }
   | { type: 'UPDATE_USER'; payload: User }
   | { type: 'DELETE_USER'; payload: string }
@@ -33,6 +36,9 @@ type Action =
   | { type: 'ADD_DEPARTMENT'; payload: Department }
   | { type: 'UPDATE_DEPARTMENT'; payload: Department }
   | { type: 'DELETE_DEPARTMENT'; payload: string }
+  | { type: 'ADD_PLATFORM'; payload: AIPlatform }
+  | { type: 'UPDATE_PLATFORM'; payload: AIPlatform }
+  | { type: 'DELETE_PLATFORM'; payload: string }
   | { type: 'SET_ORGANIZATION'; payload: { organization: Organization }};
 
 const initialState: AppState = {
@@ -43,6 +49,7 @@ const initialState: AppState = {
   events: INITIAL_EVENTS,
   policies: MOCK_POLICIES,
   departments: INITIAL_DEPARTMENTS,
+  platforms: MOCK_PLATFORMS,
   notifications: [],
   isDarkMode: false,
   isLoading: false,
@@ -84,10 +91,17 @@ const reducer = (state: AppState, action: Action): AppState => {
       return { ...state, searchQuery: action.payload };
     case 'ADD_NOTIFICATION':
       return { ...state, notifications: [action.payload, ...state.notifications] };
+    case 'ADD_POLICY':
+        return { ...state, policies: [...state.policies, action.payload] };
     case 'UPDATE_POLICY':
         return {
             ...state,
             policies: state.policies.map(p => p.id === action.payload.id ? action.payload : p)
+        };
+    case 'DELETE_POLICY':
+        return {
+            ...state,
+            policies: state.policies.filter(p => p.id !== action.payload)
         };
     case 'ADD_USER':
         return { ...state, users: [action.payload, ...state.users] };
@@ -123,6 +137,18 @@ const reducer = (state: AppState, action: Action): AppState => {
             users: deptToDelete 
                 ? state.users.map(u => u.department === deptToDelete.name ? { ...u, department: 'Unassigned' } : u)
                 : state.users
+        };
+    case 'ADD_PLATFORM':
+        return { ...state, platforms: [...state.platforms, action.payload] };
+    case 'UPDATE_PLATFORM':
+        return {
+            ...state,
+            platforms: state.platforms.map(p => p.id === action.payload.id ? action.payload : p)
+        };
+    case 'DELETE_PLATFORM':
+        return {
+            ...state,
+            platforms: state.platforms.filter(p => p.id !== action.payload)
         };
     default:
       return state;
