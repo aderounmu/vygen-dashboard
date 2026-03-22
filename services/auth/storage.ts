@@ -16,10 +16,12 @@ export const saveSession = async (response: AuthResponse) => {
 };
 
 export const clearAuthStorage = async () => {
+  console.log("Here-----> 56")
 //   await localStorage.deleteItem("token");
-  await localStorage.deleteItem("sessionId");
-  await localStorage.deleteItem("userId");
-  await localStorage.deleteItem("email");
-  await localStorage.deleteItem("name");
-  await localStorage.clear();
+  
+  localStorage.removeItem("sessionId");
+  localStorage.removeItem("userId");
+  localStorage.removeItem("email");
+  localStorage.removeItem("name");
+  localStorage.clear();
 };

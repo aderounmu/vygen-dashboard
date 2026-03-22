@@ -2,7 +2,7 @@ import React, { createContext, useContext, useEffect, useReducer } from 'react';
 import { AIEvent, Policy, User, Notification, Organization, Department } from '../types';
 import { CURRENT_USER, INITIAL_EVENTS, MOCK_POLICIES, MOCK_USERS, INITIAL_DEPARTMENTS, MockAPI } from '../services/mockService';
 
-interface AppState {
+export interface AppState {
   user: User | null; // Current logged in user
   organization: Organization | null;
   isAuthenticated: boolean;
@@ -32,7 +32,8 @@ type Action =
   | {type: 'SET_AUTHENTICATION'; payload: null}
   | { type: 'ADD_DEPARTMENT'; payload: Department }
   | { type: 'UPDATE_DEPARTMENT'; payload: Department }
-  | { type: 'DELETE_DEPARTMENT'; payload: string };
+  | { type: 'DELETE_DEPARTMENT'; payload: string }
+  | { type: 'SET_ORGANIZATION'; payload: { organization: Organization }};
 
 const initialState: AppState = {
   user: null,
@@ -71,6 +72,7 @@ const reducer = (state: AppState, action: Action): AppState => {
         organization: action.payload.organization,
         isAuthenticated: true 
       };
+    case 'SET_ORGANIZATION': return {...state, organization: action.payload.organization,}
     case 'SET_AUTHENTICATION': return {...state, isAuthenticated: true}
     case 'ADD_EVENT':
       return { ...state, events: [action.payload, ...state.events] };

@@ -17,6 +17,8 @@ import {
   CreateBusinessRoleRequest,
   CreateBusinessRoleResponse,
   GetBusinessesResponse,
+  GetBusinessMembersResponse,
+  GetBusinessRolesResponse,
   UnassignBusinessRolePermissionsRequest,
   UnassignBusinessRolePermissionsResponse,
 } from "./types";
@@ -40,6 +42,17 @@ export const businessQueryKeys = {
 /* =========================
    API CALLS
 ========================= */
+
+export const getBusinessMembers = async (
+  businessId: string
+): Promise<GetBusinessMembersResponse> => {
+  const response = await api.get<GetBusinessMembersResponse>(
+    `/business/${businessId}/members`
+  );
+
+  return response.data;
+};
+
 
 export const getBusinesses = async (): Promise<GetBusinessesResponse> => {
   const response = await api.get<GetBusinessesResponse>("/business");
@@ -99,9 +112,49 @@ export const unassignBusinessRolePermissions = async (
   return response.data;
 };
 
+export const getBusinessRoles = async (
+  businessId: string
+): Promise<GetBusinessRolesResponse> => {
+  const response = await api.get<GetBusinessRolesResponse>(
+    `/business/${businessId}/roles`
+  );
+
+  return response.data;
+};
+
 /* =========================
    QUERIES
 ========================= */
+
+export const useGetBusinessRoles = (
+  businessId: string,
+  options?: Omit<
+    UseQueryOptions<GetBusinessRolesResponse, AxiosError<ApiErrorResponse>>,
+    "queryKey" | "queryFn"
+  >
+) => {
+  return useQuery<GetBusinessRolesResponse, AxiosError<ApiErrorResponse>>({
+    queryKey: businessQueryKeys.roles(businessId),
+    queryFn: () => getBusinessRoles(businessId),
+    enabled: !!businessId,
+    ...options,
+  });
+};
+
+export const useGetBusinessMembers = (
+  businessId: string,
+  options?: Omit<
+    UseQueryOptions<GetBusinessMembersResponse, AxiosError<ApiErrorResponse>>,
+    "queryKey" | "queryFn"
+  >
+) => {
+  return useQuery<GetBusinessMembersResponse, AxiosError<ApiErrorResponse>>({
+    queryKey: businessQueryKeys.members(businessId),
+    queryFn: () => getBusinessMembers(businessId),
+    enabled: !!businessId,
+    ...options,
+  });
+};
 
 export const useGetBusinesses = (
   options?: Omit<

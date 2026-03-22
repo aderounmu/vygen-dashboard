@@ -4,11 +4,33 @@ import {
   BarChart, Bar, Cell, PieChart, Pie, Legend
 } from 'recharts';
 import { useStore } from '../context/Store';
-import { ArrowUpRight, ArrowDownRight, MoreHorizontal, Filter, Download, Calendar, Activity, Lock, AlertTriangle } from 'lucide-react';
+import { ArrowUpRight, ArrowDownRight, MoreHorizontal, Filter, Download, Calendar, Activity, Lock, AlertTriangle, Loader2 } from 'lucide-react';
 import { RiskLevel } from '../types';
+import { useGetBusinesses } from '@/services/business/hooks';
 
 export const Dashboard: React.FC = () => {
-  const { state } = useStore();
+  const { state, dispatch } = useStore();
+
+  const business = useGetBusinesses()
+  React.useEffect(() => {
+   const _business = business.data?.data[0]
+   if(_business){
+      dispatch({
+         type: 'SET_ORGANIZATION',
+         payload: {
+            organization: {
+              id: _business.id,
+              name: _business.name,
+              email: _business.email,
+              reference: _business.reference
+            }
+         }
+      })
+   }
+   
+
+  },[business.data])
+
   
   // Calculate Metrics on the fly based on events state
   const metrics = useMemo(() => {
@@ -43,6 +65,12 @@ export const Dashboard: React.FC = () => {
     { name: 'Mobile App', value: 241.60, color: '#0ea5e9' }, // Sky
     { name: 'Other', value: 213.42, color: '#a855f7' }, // Purple
   ];
+
+  if(business.isLoading){
+   return <div className="flex justify-center item-center w-full h-full px-3 py-5">
+      <Loader2 className="w-5 h-5 animate-spin" /> 
+   </div>
+  }
 
   return (
     <div className="space-y-6 animate-in fade-in duration-500">

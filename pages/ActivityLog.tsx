@@ -118,7 +118,7 @@ export const ActivityLog: React.FC = () => {
       {/* Slide-over / Modal for Inspection Details */}
       {selectedEvent && (
         <div className="fixed inset-0 z-50 overflow-hidden" aria-labelledby="slide-over-title" role="dialog" aria-modal="true">
-          <div className="absolute inset-0 bg-gray-500 bg-opacity-75 transition-opacity" onClick={() => setSelectedEvent(null)}></div>
+          <div className="absolute inset-0 bg-gray-500/25 bg-opacity-25 transition-opacity" onClick={() => setSelectedEvent(null)}></div>
           <div className="fixed inset-y-0 right-0 max-w-xl w-full flex pl-10">
             <div className="w-full relative bg-white dark:bg-slate-900 shadow-2xl flex flex-col overflow-y-scroll">
                 

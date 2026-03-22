@@ -12,11 +12,16 @@ import {
   Info,
   Users
 } from 'lucide-react';
-import { useStore } from '../context/Store';
+import { AppState, useStore } from '../context/Store';
 import { Department, Permission } from '../types';
+import { BusinessPermission } from '@/services/business/types';
+import DepartmentCreateModal from '@/components/DepartmentCreateModal';
+import DepartmentEditModal from '@/components/DepartmentEditModal';
+import { useGetBusinessRoles } from '@/services/business/hooks';
+import { AppDispatch } from 'recharts/types/state/store';
 
 export const Departments: React.FC = () => {
-  const { state, dispatch } = useStore();
+  const { state, dispatch } :{ state : AppState, dispatch: AppDispatch} = useStore();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingDept, setEditingDept] = useState<Department | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
@@ -24,13 +29,22 @@ export const Departments: React.FC = () => {
   const [formData, setFormData] = useState({
     name: '',
     description: '',
-    permissions: [] as Permission[]
+    // permissions: [] as Permission[]
+    permissions: [] as Array<BusinessPermission>
   });
 
-  const filteredDepts = state.departments.filter(dept => 
-    dept.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    dept.description.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  const {data , isLoading} = useGetBusinessRoles(state.organization.id)
+  // const filteredDepts = state.departments.filter(dept => 
+  //   dept.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+  //   dept.description.toLowerCase().includes(searchQuery.toLowerCase())
+  // );
+  const filteredDepts = !data?.data || data?.data.length < 1 ? [] : data?.data?.map((role)=>({
+    id: role.id,
+    name: role.role,
+    description: "",
+    permissions: role.permissions,
+   
+ }))
 
   const handleOpenModal = (dept?: Department) => {
     if (dept) {
@@ -45,7 +59,7 @@ export const Departments: React.FC = () => {
       setFormData({
         name: '',
         description: '',
-        permissions: [Permission.VIEW_DASHBOARD]
+        permissions: []
       });
     }
     setIsModalOpen(true);
@@ -56,29 +70,29 @@ export const Departments: React.FC = () => {
     setEditingDept(null);
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (editingDept) {
-      dispatch({
-        type: 'UPDATE_DEPARTMENT',
-        payload: {
-          ...editingDept,
-          name: formData.name,
-          description: formData.description,
-          permissions: formData.permissions
-        }
-      });
-    } else {
-      const newDept: Department = {
-        id: Math.random().toString(36).substr(2, 9),
-        name: formData.name,
-        description: formData.description,
-        permissions: formData.permissions
-      };
-      dispatch({ type: 'ADD_DEPARTMENT', payload: newDept });
-    }
-    handleCloseModal();
-  };
+  // const handleSubmit = (e: React.FormEvent) => {
+  //   e.preventDefault();
+  //   if (editingDept) {
+  //     dispatch({
+  //       type: 'UPDATE_DEPARTMENT',
+  //       payload: {
+  //         ...editingDept,
+  //         name: formData.name,
+  //         description: formData.description,
+  //         permissions: formData.permissions
+  //       }
+  //     });
+  //   } else {
+  //     const newDept: Department = {
+  //       id: Math.random().toString(36).substr(2, 9),
+  //       name: formData.name,
+  //       description: formData.description,
+  //       permissions: formData.permissions
+  //     };
+  //     dispatch({ type: 'ADD_DEPARTMENT', payload: newDept });
+  //   }
+  //   handleCloseModal();
+  // };
 
   const handleDelete = (id: string) => {
     if (window.confirm('Are you sure you want to delete this department? This will affect users assigned to it.')) {
@@ -86,14 +100,7 @@ export const Departments: React.FC = () => {
     }
   };
 
-  const togglePermission = (permission: Permission) => {
-    setFormData(prev => ({
-      ...prev,
-      permissions: prev.permissions.includes(permission)
-        ? prev.permissions.filter(p => p !== permission)
-        : [...prev.permissions, permission]
-    }));
-  };
+  
 
   return (
     <div className="space-y-6 animate-in fade-in duration-500">
@@ -188,7 +195,7 @@ export const Departments: React.FC = () => {
                     <div className="flex flex-wrap gap-1.5">
                       {dept.permissions.slice(0, 3).map(p => (
                         <span key={p} className="px-2 py-0.5 bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 text-[10px] font-medium rounded-md">
-                          {p.replace('_', ' ')}
+                          {p.name.replace('_', ' ')}
                         </span>
                       ))}
                       {dept.permissions.length > 3 && (
@@ -201,7 +208,7 @@ export const Departments: React.FC = () => {
                   <td className="px-6 py-4 text-right">
                     <div className="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
                       <button 
-                        onClick={() => handleOpenModal(dept)}
+                        // onClick={() => handleOpenModal(dept)}
                         className="p-2 text-slate-400 hover:text-brand-600 hover:bg-brand-50 dark:hover:bg-brand-900/20 rounded-lg transition-all"
                       >
                         <Edit2 className="w-4 h-4" />
@@ -223,113 +230,9 @@ export const Departments: React.FC = () => {
 
       {/* Modal */}
       {isModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-200">
-          <div className="bg-white dark:bg-slate-800 rounded-3xl w-full max-w-2xl shadow-2xl border border-slate-200 dark:border-slate-700 overflow-hidden animate-in zoom-in-95 duration-200">
-            <div className="p-6 border-b border-slate-100 dark:border-slate-700 flex items-center justify-between">
-              <div>
-                <h2 className="text-xl font-bold text-slate-900 dark:text-white">
-                  {editingDept ? 'Edit Department' : 'Create New Department'}
-                </h2>
-                <p className="text-sm text-slate-500 dark:text-slate-400">Define access controls for this unit.</p>
-              </div>
-              <button onClick={handleCloseModal} className="p-2 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-full transition-colors">
-                <X className="w-5 h-5 text-slate-400" />
-              </button>
-            </div>
-
-            <form onSubmit={handleSubmit} className="p-6 space-y-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="space-y-2">
-                  <label className="text-sm font-semibold text-slate-700 dark:text-slate-300">Department Name</label>
-                  <input 
-                    required
-                    type="text"
-                    className="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-brand-500 transition-all"
-                    placeholder="e.g., Engineering"
-                    value={formData.name}
-                    onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
-                  />
-                </div>
-                <div className="space-y-2">
-                  <label className="text-sm font-semibold text-slate-700 dark:text-slate-300">Description</label>
-                  <input 
-                    required
-                    type="text"
-                    className="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-brand-500 transition-all"
-                    placeholder="Brief purpose of this department"
-                    value={formData.description}
-                    onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
-                  />
-                </div>
-              </div>
-
-              <div className="space-y-4">
-                <div className="flex items-center justify-between">
-                  <label className="text-sm font-semibold text-slate-700 dark:text-slate-300">Permissions</label>
-                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
-                    {formData.permissions.length} Selected
-                  </span>
-                </div>
-                
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  {Object.values(Permission).map((permission) => {
-                    const isSelected = formData.permissions.includes(permission);
-                    return (
-                      <button
-                        key={permission}
-                        type="button"
-                        onClick={() => togglePermission(permission)}
-                        className={`flex items-center justify-between p-3 rounded-2xl border transition-all text-left ${
-                          isSelected 
-                            ? 'bg-brand-50 border-brand-200 dark:bg-brand-900/20 dark:border-brand-800' 
-                            : 'bg-white border-slate-100 hover:border-slate-200 dark:bg-slate-800 dark:border-slate-700 dark:hover:border-slate-600'
-                        }`}
-                      >
-                        <div className="flex items-center gap-3">
-                          <div className={`p-1.5 rounded-lg ${
-                            isSelected ? 'bg-brand-500 text-white' : 'bg-slate-100 dark:bg-slate-700 text-slate-400'
-                          }`}>
-                            <Shield className="w-3.5 h-3.5" />
-                          </div>
-                          <span className={`text-xs font-semibold ${
-                            isSelected ? 'text-brand-700 dark:text-brand-300' : 'text-slate-600 dark:text-slate-400'
-                          }`}>
-                            {permission.replace(/_/g, ' ')}
-                          </span>
-                        </div>
-                        {isSelected && <Check className="w-4 h-4 text-brand-600 dark:text-brand-400" />}
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
-
-              <div className="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-2xl flex gap-3">
-                <Info className="w-5 h-5 text-blue-600 dark:text-blue-400 flex-shrink-0" />
-                <p className="text-xs text-blue-700 dark:text-blue-300 leading-relaxed">
-                  Permissions define what users in this department can see and do across the platform. 
-                  Changes will apply immediately to all assigned users.
-                </p>
-              </div>
-
-              <div className="flex gap-3 pt-4">
-                <button 
-                  type="button"
-                  onClick={handleCloseModal}
-                  className="flex-1 px-4 py-3 bg-slate-100 hover:bg-slate-200 dark:bg-slate-700 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-200 rounded-xl font-semibold transition-all"
-                >
-                  Cancel
-                </button>
-                <button 
-                  type="submit"
-                  className="flex-1 px-4 py-3 bg-brand-600 hover:bg-brand-700 text-white rounded-xl font-semibold transition-all shadow-sm shadow-brand-200 dark:shadow-none"
-                >
-                  {editingDept ? 'Update Department' : 'Create Department'}
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
+       <>
+        {editingDept ? <DepartmentEditModal handleCloseModal={handleCloseModal} formData={formData} setFormData={setFormData}></DepartmentEditModal> :<DepartmentCreateModal handleCloseModal={handleCloseModal} formData={formData} setFormData={setFormData}/>}
+       </>
       )}
     </div>
   );

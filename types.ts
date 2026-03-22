@@ -1,3 +1,5 @@
+import { BusinessPermission } from "./services/business/types";
+
 export enum RiskLevel {
   LOW = 'LOW',
   MEDIUM = 'MEDIUM',
@@ -25,7 +27,7 @@ export interface Department {
   id: string;
   name: string;
   description: string;
-  permissions: Permission[];
+  permissions: BusinessPermission[];
 }
 
 export interface Organization {

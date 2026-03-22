@@ -1,14 +1,18 @@
 import React, { useState } from 'react';
-import { useStore } from '../context/Store';
+import { AppState, useStore } from '../context/Store';
 import { User } from '../types';
 import { Plus, Search, Edit2, Trash2, X, Shield, Mail, Check, Settings, Briefcase } from 'lucide-react';
 import UserEditModal from '@/components/UserEditModal';
 import UserInviteModal from '@/components/UserInviteModal';
+import { useGetBusinessMembers } from '@/services/business/hooks';
+import { AppDispatch } from 'recharts/types/state/store';
 
 export const Users: React.FC = () => {
-  const { state, dispatch } = useStore();
+  const { state , dispatch } :{ state : AppState, dispatch: AppDispatch} = useStore();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingUser, setEditingUser] = useState<User | null>(null);
+
+  const { data, isLoading } = useGetBusinessMembers(state.organization.id);
   
   // Form State
   const [formData, setFormData] = useState<Partial<User>>({
@@ -43,47 +47,56 @@ export const Users: React.FC = () => {
     setEditingUser(null);
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
+//   const handleSubmit = (e: React.FormEvent) => {
+//     e.preventDefault();
     
-    if (editingUser) {
-      // Update existing user
-      dispatch({
-        type: 'UPDATE_USER',
-        payload: { ...editingUser, ...formData } as User
-      });
-    } else {
-      // Add new user
-      const newUser: User = {
-        id: `u-${Date.now()}`,
-        avatar: `https://ui-avatars.com/api/?name=${encodeURIComponent(formData.firstName || '')}+${encodeURIComponent(formData.lastName || '')}&background=random`,
-        firstName: formData.firstName || '',
-        lastName: formData.lastName || '',
-        name: `${formData.firstName} ${formData.lastName}`,
-        email: formData.email || '',
-        country: formData.country || 'NGA',
-        department: formData.department || 'General',
-        status: formData.status || 'Active'
-      };
+//     if (editingUser) {
+//       // Update existing user
+//       dispatch({
+//         type: 'UPDATE_USER',
+//         payload: { ...editingUser, ...formData } as User
+//       });
+//     } else {
+//       // Add new user
+//       const newUser: User = {
+//         id: `u-${Date.now()}`,
+//         avatar: `https://ui-avatars.com/api/?name=${encodeURIComponent(formData.firstName || '')}+${encodeURIComponent(formData.lastName || '')}&background=random`,
+//         firstName: formData.firstName || '',
+//         lastName: formData.lastName || '',
+//         name: `${formData.firstName} ${formData.lastName}`,
+//         email: formData.email || '',
+//         country: formData.country || 'NGA',
+//         department: formData.department || 'General',
+//         status: formData.status || 'Active'
+//       };
       
-      dispatch({
-        type: 'ADD_USER',
-        payload: newUser
-      });
-    }
-    handleCloseModal();
-  };
+//       dispatch({
+//         type: 'ADD_USER',
+//         payload: newUser
+//       });
+//     }
+//     handleCloseModal();
+//   };
 
-  const handleDelete = (id: string) => {
-    dispatch({ type: 'DELETE_USER', payload: id });
-  };
+//   const handleDelete = (id: string) => {
+//     dispatch({ type: 'DELETE_USER', payload: id });
+//   };
 
   // Filter users based on global search query
-  const filteredUsers = state.users.filter(user => 
-    user.name.toLowerCase().includes(state.searchQuery.toLowerCase()) ||
-    user.email.toLowerCase().includes(state.searchQuery.toLowerCase()) ||
-    user.department.toLowerCase().includes(state.searchQuery.toLowerCase())
-  );
+//   const filteredUsers = state.users.filter(user => 
+//     user.name.toLowerCase().includes(state.searchQuery.toLowerCase()) ||
+//     user.email.toLowerCase().includes(state.searchQuery.toLowerCase()) ||
+//     user.department.toLowerCase().includes(state.searchQuery.toLowerCase())
+//   );
+
+ const filteredUsers = !data?.data || data?.data.length < 1 ? [] : data?.data?.map((user)=>({
+    id: user.id,
+    avatar: "",
+    name: `${user.user.first_name} ${user.user.last_name}`,
+    department: user.business_member_role.Role.role,
+    status: "Active",
+    email: user.email
+ }))
 
   return (
     <div className="space-y-6 animate-in fade-in duration-300">
@@ -174,17 +187,17 @@ export const Users: React.FC = () => {
                             <td className="px-6 py-4 text-right">
                                 <div className="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
                                     <button 
-                                        onClick={() => handleOpenModal(user)}
+                                        // onClick={() => handleOpenModal(user)}
                                         className="p-1.5 text-slate-400 hover:text-brand-600 hover:bg-brand-50 rounded-lg transition-colors"
                                     >
                                         <Edit2 className="w-4 h-4" />
                                     </button>
-                                    <button 
+                                    {/* <button 
                                         onClick={() => handleDelete(user.id)}
                                         className="p-1.5 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
                                     >
                                         <Trash2 className="w-4 h-4" />
-                                    </button>
+                                    </button> */}
                                 </div>
                             </td>
                         </tr>

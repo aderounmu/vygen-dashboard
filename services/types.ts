@@ -4,6 +4,13 @@ export interface ApiSuccessResponse<T> {
   data: T;
 }
 
+export interface PaginatedResponse<T> {
+  data: T[];
+  total_items: number;
+  total_pages: number;
+  current_page: number;
+}
+
 export interface ApiErrorResponse {
   code: number;
   request_id: string;

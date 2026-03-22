@@ -13,9 +13,11 @@ export const Login: React.FC = () => {
   
   const { dispatch } = useStore();
   const navigate = useNavigate();
+  
 
 
-  const login = localStorage.getItem("sessionId")
+  const login = localStorage.getItem("sessionId");
+  //Find a way to get user Info and organization info etc to store
   if(login){
     dispatch({
       type: 'SET_AUTHENTICATION',
@@ -43,9 +45,9 @@ export const Login: React.FC = () => {
               status: 'Active'
             },
             organization: {
-              id: 'org-1',
-              name: 'Vyken Security',
-              email: 'contact@vyken.security'
+              id: '',
+              name: '',
+              email: ''
             }
           }
           });
