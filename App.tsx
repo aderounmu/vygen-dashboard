@@ -7,6 +7,7 @@ import { ActivityLog } from './pages/ActivityLog';
 import { Policies } from './pages/Policies';
 import { Users } from './pages/Users';
 import { Departments } from './pages/Departments';
+import { Prompting } from './pages/Prompting';
 import { Login } from './pages/Login';
 import { Register } from './pages/Register';
 
@@ -37,6 +38,7 @@ const AppRoutes: React.FC = () => {
         <Route path="policies" element={<Policies />} />
         <Route path="users" element={<Users />} />
         <Route path="departments" element={<Departments />} />
+        <Route path="prompting" element={<Prompting />} />
         
         {/* Fallback routes for demo */}
         <Route path="settings" element={<div className="p-8 text-center text-slate-500">Global Configuration (Coming Soon)</div>} />
