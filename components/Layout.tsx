@@ -19,7 +19,8 @@ import {
   Zap,
   ChevronRight,
   ChevronDown,
-  LogOut
+  LogOut,
+  Terminal
 } from 'lucide-react';
 import { useStore } from '../context/Store';
 import { clearAuthStorage } from '@/services/auth/storage';
@@ -35,6 +36,7 @@ export const Layout: React.FC = () => {
         { name: 'Dashboard', path: '/', icon: LayoutDashboard },
         { name: 'Activity Log', path: '/activity', icon: Activity },
         { name: 'Policies', path: '/policies', icon: ShieldAlert },
+        { name: 'Prompting', path: '/prompting', icon: Terminal, badge: 'NEW' },
         { name: 'Users', path: '/users', icon: Users, badge: '8' },
         { name: 'Departments', path: '/departments', icon: Building2 },
       ]
