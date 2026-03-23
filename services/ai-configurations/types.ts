@@ -1,4 +1,8 @@
-import { ApiSuccessResponse } from "../types";
+import { ApiSuccessResponse, PaginatedResponse } from "../types";
+
+/* =========================
+   ENTITY TYPES
+========================= */
 
 export interface AiToolConfiguration {
   id: string;
@@ -42,22 +46,14 @@ export interface CreateDataClassificationConfigurationRequest {
    RESPONSE TYPES
 ========================= */
 
-export interface GetAiToolConfigurationsResponse {
-  data: AiToolConfiguration[];
-  total_items: number;
-  total_pages: number;
-  current_page: number;
-}
-
 export interface CreateAiToolConfigurationResponse
   extends ApiSuccessResponse<AiToolConfiguration[]> {}
 
-export interface GetDataClassificationConfigurationsResponse {
-  data: DataClassificationConfiguration[];
-  total_items: number;
-  total_pages: number;
-  current_page: number;
-}
+export type GetAiToolConfigurationsResponse =
+  PaginatedResponse<AiToolConfiguration>;
 
 export interface CreateDataClassificationConfigurationResponse
   extends ApiSuccessResponse<DataClassificationConfiguration[]> {}
+
+export type GetDataClassificationConfigurationsResponse =
+  PaginatedResponse<DataClassificationConfiguration>;

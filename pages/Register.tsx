@@ -24,21 +24,21 @@ export const Register: React.FC = () => {
 
   // Step 1: User Data
   const [userData, setUserData] = useState<{
-     first_name: string 
-    last_name: string 
-    email: string 
-    country: string
-    password: string 
+    first_name: string;
+    last_name: string;
+    email: string;
+    country: string;
+    password: string;
   }>({
     first_name: "",
     last_name: "",
     email: "",
-    country: "NGA",
+    country: "USA",
     password: "",
   });
 
   // Step 2: Organization Data
-  const [orgData, setOrgData] = useState<{email : string , name: string}>({
+  const [orgData, setOrgData] = useState<{ email: string; name: string }>({
     name: "",
     email: "",
   });
@@ -58,8 +58,8 @@ export const Register: React.FC = () => {
   const createBusiness = useCreateBusiness({
     successFn: (data) => {
       toast.success("Registration Successful");
-      const org = data.data[0]
-      console.log(userData, "----> closure" , savedUserData)
+      const org = data.data[0];
+      console.log(userData, "----> closure", savedUserData);
       dispatch({
         type: "REGISTER",
         payload: {
@@ -78,7 +78,7 @@ export const Register: React.FC = () => {
             id: org.id,
             name: org.name,
             email: org.email,
-            reference: org.reference
+            reference: org.reference,
           },
         },
       });
@@ -93,13 +93,13 @@ export const Register: React.FC = () => {
   const { dispatch } = useStore();
   const navigate = useNavigate();
 
-  const login = localStorage.getItem("sessionId")
-  if(login){
+  const login = localStorage.getItem("sessionId");
+  if (login) {
     dispatch({
-      type: 'SET_AUTHENTICATION',
-      payload: null
-    })
-    navigate('/');
+      type: "SET_AUTHENTICATION",
+      payload: null,
+    });
+    navigate("/");
   }
 
   const handleNext = (e: React.FormEvent) => {
@@ -139,30 +139,26 @@ export const Register: React.FC = () => {
     //   setIsLoading(false);
     // }, 1500);
 
-    try{
+    try {
       const data = await resgisterService.mutateAsync({
         first_name: userData.first_name,
         last_name: userData.last_name,
         country: userData.country,
         password: userData.password,
         email: userData.email,
-      })
+      });
 
       const user = data.data[0].user;
-      console.log(data, user)
+      console.log(data, user);
       setSavedUserData(user);
-
-    }catch(error){
-        toast.error(`Registration Failed`);
+    } catch (error) {
+      toast.error(`Registration Failed`);
     }
 
     createBusiness.mutate({
       email: orgData.email,
       name: orgData.name,
-    })
-
-
-
+    });
   };
 
   return (
@@ -268,7 +264,7 @@ export const Register: React.FC = () => {
                   <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
                     <Globe className="h-5 w-5 text-slate-400" />
                   </div>
-                  <input
+                  {/* <input
                     type="text"
                     required
                     className="block w-full pl-11 pr-4 py-3.5 bg-slate-50 dark:bg-slate-900 border-none rounded-2xl text-slate-900 dark:text-white placeholder-slate-400 focus:ring-2 focus:ring-brand-500 transition-all"
@@ -277,7 +273,19 @@ export const Register: React.FC = () => {
                     onChange={(e) =>
                       setUserData({ ...userData, country: e.target.value })
                     }
-                  />
+                  /> */}
+                  <select
+                    className="block w-full pl-11 pr-4 py-3.5 bg-slate-50 dark:bg-slate-900 border-none rounded-2xl text-slate-900 dark:text-white placeholder-slate-400 focus:ring-2 focus:ring-brand-500 transition-all"
+                    id="country"
+                    value={userData.country}
+                    onChange={(e) =>
+                      setUserData({ ...userData, country: e.target.value })
+                    }
+                  >
+                    <option value="USA">United States Of America</option>
+                    <option value="UK">United Kingdom</option>
+                    <option value="NGA">Nigeria</option>
+                  </select>
                 </div>
               </div>
 
@@ -365,7 +373,9 @@ export const Register: React.FC = () => {
                 </button>
                 <button
                   type="submit"
-                  disabled={createBusiness.isPending || resgisterService.isPending}
+                  disabled={
+                    createBusiness.isPending || resgisterService.isPending
+                  }
                   className="flex-2 bg-brand-600 hover:bg-brand-700 disabled:bg-brand-400 text-white font-bold py-4 rounded-2xl shadow-lg shadow-brand-500/20 transition-all flex items-center justify-center gap-2 group"
                 >
                   {createBusiness.isPending || resgisterService.isPending ? (

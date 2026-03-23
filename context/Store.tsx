@@ -17,7 +17,7 @@ export interface AppState {
   searchQuery: string;
 }
 
-type Action =
+export type Action =
   | { type: 'LOGIN'; payload: { user: User; organization?: Organization } }
   | { type: 'LOGOUT' }
   | { type: 'REGISTER'; payload: { user: User; organization: Organization } }
@@ -55,6 +55,8 @@ const initialState: AppState = {
   isLoading: false,
   searchQuery: '',
 };
+
+
 
 const reducer = (state: AppState, action: Action): AppState => {
   switch (action.type) {

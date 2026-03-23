@@ -34,15 +34,6 @@ export const aiConfigurationQueryKeys = {
    API CALLS
 ========================= */
 
-export const getAiToolConfigurations = async (
-  businessId: string
-): Promise<GetAiToolConfigurationsResponse> => {
-  const response = await api.get<GetAiToolConfigurationsResponse>(
-    `/business/${businessId}/dlp/config/ai-tools`
-  );
-  return response.data;
-};
-
 export const createAiToolConfiguration = async (
   businessId: string,
   payload: CreateAiToolConfigurationRequest
@@ -51,15 +42,17 @@ export const createAiToolConfiguration = async (
     `/business/${businessId}/dlp/config/ai-tools`,
     payload
   );
+
   return response.data;
 };
 
-export const getDataClassificationConfigurations = async (
+export const getAiToolConfigurations = async (
   businessId: string
-): Promise<GetDataClassificationConfigurationsResponse> => {
-  const response = await api.get<GetDataClassificationConfigurationsResponse>(
-    `/business/${businessId}/dlp/config/data-classifications`
+): Promise<GetAiToolConfigurationsResponse> => {
+  const response = await api.get<GetAiToolConfigurationsResponse>(
+    `/business/${businessId}/dlp/config/ai-tools`
   );
+
   return response.data;
 };
 
@@ -71,6 +64,17 @@ export const createDataClassificationConfiguration = async (
     `/business/${businessId}/dlp/config/data-classifications`,
     payload
   );
+
+  return response.data;
+};
+
+export const getDataClassificationConfigurations = async (
+  businessId: string
+): Promise<GetDataClassificationConfigurationsResponse> => {
+  const response = await api.get<GetDataClassificationConfigurationsResponse>(
+    `/business/${businessId}/dlp/config/data-classifications`
+  );
+
   return response.data;
 };
 

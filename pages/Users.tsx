@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { AppState, useStore } from '../context/Store';
+import { Action, AppState, useStore } from '../context/Store';
 import { User } from '../types';
 import { Plus, Search, Edit2, Trash2, X, Shield, Mail, Check, Settings, Briefcase } from 'lucide-react';
 import UserEditModal from '@/components/UserEditModal';
@@ -8,7 +8,7 @@ import { useGetBusinessMembers } from '@/services/business/hooks';
 import { AppDispatch } from 'recharts/types/state/store';
 
 export const Users: React.FC = () => {
-  const { state , dispatch } :{ state : AppState, dispatch: AppDispatch} = useStore();
+  const { state , dispatch } :{ state : AppState, dispatch : React.Dispatch<Action>} = useStore();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingUser, setEditingUser] = useState<User | null>(null);
 

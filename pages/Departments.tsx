@@ -12,7 +12,7 @@ import {
   Info,
   Users
 } from 'lucide-react';
-import { AppState, useStore } from '../context/Store';
+import { Action, AppState, useStore } from '../context/Store';
 import { Department, Permission } from '../types';
 import { BusinessPermission } from '@/services/business/types';
 import DepartmentCreateModal from '@/components/DepartmentCreateModal';
@@ -21,7 +21,7 @@ import { useGetBusinessRoles } from '@/services/business/hooks';
 import { AppDispatch } from 'recharts/types/state/store';
 
 export const Departments: React.FC = () => {
-  const { state, dispatch } :{ state : AppState, dispatch: AppDispatch} = useStore();
+  const { state, dispatch } :{ state : AppState, dispatch : React.Dispatch<Action>} = useStore();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingDept, setEditingDept] = useState<Department | null>(null);
   const [searchQuery, setSearchQuery] = useState('');

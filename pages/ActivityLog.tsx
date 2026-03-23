@@ -1,12 +1,15 @@
 import React, { useState } from 'react';
-import { useStore } from '../context/Store';
+import { AppState, useStore } from '../context/Store';
 import { RiskBadge } from '../components/RiskBadge';
 import { ChevronLeft, ChevronRight, Eye, AlertCircle, CheckCircle, XCircle } from 'lucide-react';
 import { AIEvent } from '../types';
+import { useGetPromptEvents } from '@/services/prompt/hook';
+import { PromptEvent } from '@/services/prompt/types';
 
 export const ActivityLog: React.FC = () => {
-  const { state } = useStore();
-  const [selectedEvent, setSelectedEvent] = useState<AIEvent | null>(null);
+  const { state}: {state:  AppState} = useStore();
+//   const [(selectedEvent as PromptEvent), setSelectedEvent] = useState<AIEvent | null>(null);
+  const [selectedEvent, setSelectedEvent] = useState<PromptEvent | null>(null);
   const [page, setPage] = useState(1);
   const itemsPerPage = 10;
 
@@ -18,7 +21,9 @@ export const ActivityLog: React.FC = () => {
   });
 
   const totalPages = Math.ceil(filteredEvents.length / itemsPerPage);
-  const currentData = filteredEvents.slice((page - 1) * itemsPerPage, page * itemsPerPage);
+//   const currentData = filteredEvents.slice((page - 1) * itemsPerPage, page * itemsPerPage);
+
+  const currentData = useGetPromptEvents(state.organization.id)
 
   return (
     <div className="space-y-6">
@@ -39,7 +44,7 @@ export const ActivityLog: React.FC = () => {
             <thead className="bg-slate-50 dark:bg-slate-900/50">
               <tr>
                 <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider">User</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider">Department</th>
+                {/* <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider">Department</th> */}
                 <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider">Tool</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider">Risk Level</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider">Action</th>
@@ -48,32 +53,33 @@ export const ActivityLog: React.FC = () => {
               </tr>
             </thead>
             <tbody className="bg-white dark:bg-slate-800 divide-y divide-slate-200 dark:divide-slate-700">
-              {currentData.map((event) => (
+              {(currentData?.data?.data ?? []).map((event) => (
                 <tr key={event.id} className="hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors">
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="flex items-center">
                       <div className="flex-shrink-0 h-8 w-8">
-                        <img className="h-8 w-8 rounded-full" src={event.user.avatar} alt="" />
+                        <img className="h-8 w-8 rounded-full" src="" alt="" />
                       </div>
                       <div className="ml-3">
-                        <div className="text-sm font-medium text-slate-900 dark:text-white">{event.user.name}</div>
+                        <div className="text-sm font-medium text-slate-900 dark:text-white">{event.business_member.email}</div>
                       </div>
                     </div>
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500 dark:text-slate-400">{event.department}</td>
+                  {/* <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500 dark:text-slate-400">{event.business_member.business_member_role.role}</td> */}
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500 dark:text-slate-400">
                     <span className="flex items-center gap-1.5">
-                        {event.tool}
+                        {event.ai_tool_data.tool_name}
                     </span>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <RiskBadge level={event.riskLevel} />
+                    {/* <RiskBadge level={event.risk_score} /> */}
+                    {event.risk_score}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <RiskBadge action={event.actionTaken} />
+                    <RiskBadge action={event.action} />
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500 dark:text-slate-400">
-                    {new Date(event.timestamp).toLocaleString()}
+                    {new Date(event.created_at).toLocaleString()}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                     <button 
@@ -116,7 +122,7 @@ export const ActivityLog: React.FC = () => {
       </div>
 
       {/* Slide-over / Modal for Inspection Details */}
-      {selectedEvent && (
+      {(selectedEvent as PromptEvent) && (
         <div className="fixed inset-0 z-50 overflow-hidden" aria-labelledby="slide-over-title" role="dialog" aria-modal="true">
           <div className="absolute inset-0 bg-gray-500/25 bg-opacity-25 transition-opacity" onClick={() => setSelectedEvent(null)}></div>
           <div className="fixed inset-y-0 right-0 max-w-xl w-full flex pl-10">
@@ -125,7 +131,7 @@ export const ActivityLog: React.FC = () => {
                 <div className="p-6 border-b border-slate-200 dark:border-slate-800 flex justify-between items-start bg-slate-50 dark:bg-slate-900">
                     <div>
                         <h2 className="text-lg font-bold text-slate-900 dark:text-white">Event Inspection</h2>
-                        <p className="text-sm text-slate-500">ID: {selectedEvent.id}</p>
+                        <p className="text-sm text-slate-500">ID: {(selectedEvent as PromptEvent).id}</p>
                     </div>
                     <button onClick={() => setSelectedEvent(null)} className="text-slate-400 hover:text-slate-500">
                         <XCircle className="w-6 h-6" />
@@ -138,15 +144,15 @@ export const ActivityLog: React.FC = () => {
                         <div className="p-4 rounded-lg bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700">
                             <p className="text-xs font-semibold text-slate-500 uppercase">Risk Score</p>
                             <div className="flex items-center mt-1">
-                                <span className={`text-2xl font-bold ${selectedEvent.riskScore > 80 ? 'text-red-600' : 'text-slate-900 dark:text-white'}`}>
-                                    {selectedEvent.riskScore}
+                                <span className={`text-2xl font-bold ${(selectedEvent as PromptEvent).risk_score > 0.8 ? 'text-red-600' : 'text-slate-900 dark:text-white'}`}>
+                                    {(selectedEvent as PromptEvent).risk_score * 100}
                                 </span>
                                 <span className="text-sm text-slate-400 ml-1">/ 100</span>
                             </div>
                         </div>
                         <div className="p-4 rounded-lg bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700">
                              <p className="text-xs font-semibold text-slate-500 uppercase">Latency</p>
-                             <p className="text-2xl font-bold text-slate-900 dark:text-white mt-1">{selectedEvent.latencyMs}ms</p>
+                             <p className="text-2xl font-bold text-slate-900 dark:text-white mt-1">{0}ms</p>
                         </div>
                     </div>
 
@@ -154,18 +160,18 @@ export const ActivityLog: React.FC = () => {
                     <div>
                         <h3 className="text-sm font-medium text-slate-900 dark:text-white mb-3">Detected Sensitivity</h3>
                         <div className="flex flex-wrap gap-2">
-                            {selectedEvent.detectedDataTypes.map(type => (
-                                <span key={type} className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800 dark:bg-red-900/40 dark:text-red-300">
+                            {((selectedEvent as PromptEvent).reasons && (selectedEvent as PromptEvent).reasons !== "" ) && (
+                                <span className="inline-flex items-center capitalize px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800 dark:bg-red-900/40 dark:text-red-300">
                                     <AlertCircle className="w-3 h-3 mr-1" />
-                                    {type}
+                                    {(selectedEvent as PromptEvent).reasons }
                                 </span>
-                            ))}
-                            {selectedEvent.detectedDataTypes.includes('None') && (
+                            )}
+                            {/* {(selectedEvent as PromptEvent).reasons.includes('None') && (
                                 <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
                                     <CheckCircle className="w-3 h-3 mr-1" />
                                     Safe
                                 </span>
-                            )}
+                            )} */}
                         </div>
                     </div>
 
@@ -173,7 +179,7 @@ export const ActivityLog: React.FC = () => {
                     <div>
                         <h3 className="text-sm font-medium text-slate-900 dark:text-white mb-3">Prompt Content (Anonymized)</h3>
                         <div className="p-4 bg-slate-100 dark:bg-slate-950 rounded-lg border border-slate-200 dark:border-slate-800 font-mono text-sm text-slate-700 dark:text-slate-300 whitespace-pre-wrap">
-                            {selectedEvent.promptSnippet}
+                            {(selectedEvent as PromptEvent).encrypted_content}
                             {"\n\n"}<span className="text-slate-400 italic">// ... truncated for security ...</span>
                         </div>
                     </div>
@@ -191,7 +197,7 @@ export const ActivityLog: React.FC = () => {
                             <div className="flex items-center justify-between text-sm">
                                 <span className="text-slate-600 dark:text-slate-400">Data Sensitivity</span>
                                 <div className="w-32 bg-slate-200 dark:bg-slate-700 rounded-full h-2">
-                                    <div className="bg-red-500 h-2 rounded-full" style={{width: `${selectedEvent.riskScore}%`}}></div>
+                                    <div className="bg-red-500 h-2 rounded-full" style={{width: `${(selectedEvent as PromptEvent).risk_score * 100}%`}}></div>
                                 </div>
                             </div>
                             <div className="flex items-center justify-between text-sm">

@@ -61,9 +61,9 @@ export const Dashboard: React.FC = () => {
   }, [state.events]);
 
   const riskDistribution = [
-    { name: 'Website', value: 374.82, color: '#6366f1' }, // Indigo
-    { name: 'Mobile App', value: 241.60, color: '#0ea5e9' }, // Sky
-    { name: 'Other', value: 213.42, color: '#a855f7' }, // Purple
+    { name: 'SSN', value: 60, color: '#6366f1' }, // Indigo
+    { name: 'NIN', value: 50, color: '#0ea5e9' }, // Sky
+    { name: 'PII', value: 90, color: '#a855f7' }, // Purple
   ];
 
   if(business.isLoading){
@@ -255,7 +255,7 @@ export const Dashboard: React.FC = () => {
         {/* Donut Chart */}
         <div className="bg-white dark:bg-slate-800 p-6 rounded-[24px] shadow-sm border border-slate-100 dark:border-slate-700/50">
             <div className="flex justify-between items-center mb-4">
-              <h3 className="text-lg font-bold text-slate-900 dark:text-white">Data Distribution</h3>
+              <h3 className="text-lg font-bold text-slate-900 dark:text-white">Data Types</h3>
               <button className="px-3 py-1.5 border border-slate-200 dark:border-slate-600 rounded-lg text-xs font-medium text-slate-600 dark:text-slate-300">
                  Monthly <ChevronDown className="w-3 h-3 inline ml-1" />
               </button>
@@ -268,7 +268,7 @@ export const Dashboard: React.FC = () => {
                             <div className="w-1 h-4 rounded-full" style={{backgroundColor: item.color}}></div>
                             <span className="text-xs text-slate-500">{item.name}</span>
                         </div>
-                        <p className="text-sm font-bold text-slate-900 dark:text-white">${item.value}</p>
+                        <p className="text-sm font-bold text-slate-900 dark:text-white">{item.value}</p>
                     </div>
                 ))}
             </div>
@@ -314,14 +314,19 @@ export const Dashboard: React.FC = () => {
                             <th className="pb-3 pl-2">Application</th>
                             <th className="pb-3">Type</th>
                             <th className="pb-3">Risk Rate</th>
-                            <th className="pb-3 text-right">Impact</th>
+                            {/* <th className="pb-3 text-right">Impact</th> */}
                         </tr>
                     </thead>
                     <tbody className="divide-y divide-slate-50 dark:divide-slate-700">
+                     {/*  {[
+                            { app: 'Chatgpt', type: 'Finance', rate: 40, impact: '$650.00', color: '#6366f1' },
+                            { app: 'Claude', type: 'CRM', rate: 80, impact: '$720.50', color: '#f97316' },
+                            { app: 'Deepseek', type: 'Marketplace', rate: 20, impact: '$432.25', color: '#22c55e' },
+                        ].map((row, i) => ( */}
                         {[
-                            { app: 'Stripe', type: 'Finance', rate: 40, impact: '$650.00', color: '#6366f1' },
-                            { app: 'Zapier', type: 'CRM', rate: 80, impact: '$720.50', color: '#f97316' },
-                            { app: 'Shopify', type: 'Marketplace', rate: 20, impact: '$432.25', color: '#22c55e' },
+                            { app: 'Chatgpt', type: 'Finance', rate: 40,  color: '#6366f1' },
+                            { app: 'Claude', type: 'CRM', rate: 80, color: '#f97316' },
+                            { app: 'Deepseek', type: 'Marketplace', rate: 20,  color: '#22c55e' },
                         ].map((row, i) => (
                             <tr key={i} className="group hover:bg-slate-50 dark:hover:bg-slate-700/30 transition-colors">
                                 <td className="py-4 pl-2">
@@ -344,7 +349,7 @@ export const Dashboard: React.FC = () => {
                                         <span className="text-xs font-medium text-slate-500">{row.rate}%</span>
                                     </div>
                                 </td>
-                                <td className="py-4 text-right text-sm font-medium text-slate-600 dark:text-slate-300">{row.impact}</td>
+                                {/* <td className="py-4 text-right text-sm font-medium text-slate-600 dark:text-slate-300">{row.impact}</td> */}
                             </tr>
                         ))}
                     </tbody>
