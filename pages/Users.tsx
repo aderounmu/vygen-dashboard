@@ -12,7 +12,7 @@ export const Users: React.FC = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingUser, setEditingUser] = useState<User | null>(null);
 
-  const { data, isLoading } = useGetBusinessMembers(state.organization.id);
+  const { data, isLoading } = useGetBusinessMembers(state?.organization?.id ?? "");
   
   // Form State
   const [formData, setFormData] = useState<Partial<User>>({

@@ -33,7 +33,7 @@ export const Departments: React.FC = () => {
     permissions: [] as Array<BusinessPermission>
   });
 
-  const {data , isLoading} = useGetBusinessRoles(state.organization.id)
+  const {data , isLoading} = useGetBusinessRoles(state?.organization?.id ?? "")
   // const filteredDepts = state.departments.filter(dept => 
   //   dept.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
   //   dept.description.toLowerCase().includes(searchQuery.toLowerCase())

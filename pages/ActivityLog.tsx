@@ -23,7 +23,7 @@ export const ActivityLog: React.FC = () => {
   const totalPages = Math.ceil(filteredEvents.length / itemsPerPage);
 //   const currentData = filteredEvents.slice((page - 1) * itemsPerPage, page * itemsPerPage);
 
-  const currentData = useGetPromptEvents(state.organization.id)
+  const currentData = useGetPromptEvents(state?.organization?.id ?? "")
 
   return (
     <div className="space-y-6">

@@ -1,4 +1,4 @@
-import { PaginatedResponse } from "../types";
+import { ApiSuccessResponse, PaginatedResponse } from "../types";
 
 /* =========================
    NESTED ENTITY TYPES
@@ -73,9 +73,20 @@ export interface PromptEvent {
   action: string;
   reasons: string;
   created_at: string;
-  business: PromptEventBusiness;
-  business_member: PromptEventBusinessMember;
-  ai_tool_data: PromptEventAiToolData;
+  business: PromptEventBusiness | null;
+  business_member: PromptEventBusinessMember | null;
+  ai_tool_data: PromptEventAiToolData | null;
+}
+
+/* =========================
+   REQUEST TYPES
+========================= */
+
+export interface SubmitPromptRequest {
+  business_reference: string;
+  business_member_id: string;
+  ai_tool: string;
+  prompt: string;
 }
 
 /* =========================
@@ -83,3 +94,6 @@ export interface PromptEvent {
 ========================= */
 
 export type GetPromptEventsResponse = PaginatedResponse<PromptEvent>;
+
+export interface SubmitPromptResponse
+  extends ApiSuccessResponse<PromptEvent[]> {}

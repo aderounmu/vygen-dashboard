@@ -1,16 +1,23 @@
 import React, { useState } from 'react';
-import { Send, ShieldCheck, ShieldAlert, ShieldX, Loader2, AlertTriangle, CheckCircle, Ban, Cpu, Globe, Zap, Info } from 'lucide-react';
+import { Send, ShieldCheck, ShieldAlert, ShieldX, Loader2, AlertTriangle, CheckCircle, Ban, Cpu, Globe, Zap, Info, ChevronDown } from 'lucide-react';
+import { useGetAiToolConfigurations, useGetDataClassificationConfigurations } from '@/services/ai-configurations/hooks';
+import { AppState, useStore } from '@/context/Store';
+import { useSubmitPrompt } from '@/services/prompt/hook';
+import { toast } from 'sonner';
 
+
+type actionType = 'block' | 'warn' | 'pass'
 interface Violation {
   type: string;
-  action: 'block' | 'warn' | 'pass';
+  action: actionType;
   message: string;
 }
+
 
 interface ValidationResult {
   isValid: boolean;
   violations: Violation[];
-  action: 'block' | 'warn' | 'pass';
+  action: actionType;
   timestamp: string;
   risk_score: number;
   reasons: string[];
@@ -27,10 +34,47 @@ const PLATFORMS = [
 
 export const Prompting: React.FC = () => {
   const [prompt, setPrompt] = useState('');
-  const [selectedPlatform, setSelectedPlatform] = useState(PLATFORMS[0].id);
   const [isLoading, setIsLoading] = useState(false);
+  const { state}: {state: AppState} = useStore();
   const [result, setResult] = useState<ValidationResult | null>(null);
   const [error, setError] = useState<string | null>(null);
+
+  const bussines_member_id = "f4054b61-4e54-4c8b-b74e-af3b60396e17";
+
+  const plaforms = useGetAiToolConfigurations(state?.organization?.id ?? "")
+  const [selectedPlatform, setSelectedPlatform] = useState((plaforms?.data?.data ?? [])[0]?.tool_name);
+
+
+  const submitPrompt = useSubmitPrompt(
+    {
+      successFn : (data) => {
+          // toast.success("Prompt submit")
+          const _data = (data?.data ?? [])[0]
+          const isBlocked = _data.action.toLowerCase() === 'block'
+          const _result: ValidationResult = {
+            isValid: !isBlocked,
+            violations: _data?.reasons?.split(",").map((item) => {
+              return {
+                type: item,
+                action: _data.action.toLowerCase() as actionType,
+                message: ""
+              } as Violation
+            }),
+            action: _data.action.toLowerCase() as actionType,
+            timestamp: _data.created_at,
+            risk_score: _data.risk_score,
+            reasons:_data?.reasons?.split(","),
+            platform: _data?.ai_tool_data?.tool_name,
+          }
+          setResult(_result)
+     },
+     failureFn: (error) => {
+        const message = ""
+        setError("Error occured submitting prompt")
+        toast.error(`Error occured submitting prompt`)
+     }
+    }
+  )
 
   const handleValidate = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -41,61 +85,71 @@ export const Prompting: React.FC = () => {
     setResult(null);
 
     // Simulate network delay
-    setTimeout(() => {
-      const promptLower = prompt.toLowerCase();
-      const violations: Violation[] = [];
-      const reasons: string[] = [];
-      let riskScore = 0;
+    // setTimeout(() => {
+    //   const promptLower = prompt.toLowerCase();
+    //   const violations: Violation[] = [];
+    //   const reasons: string[] = [];
+    //   let riskScore = 0;
 
-      // Client-side validation logic
-      if (promptLower.includes("nin") || /\d{11}/.test(prompt)) {
-        violations.push({
-          type: "NIN",
-          action: 'block',
-          message: "Potential National Identification Number detected."
-        });
-        reasons.push("nin");
-        riskScore = Math.max(riskScore, 95);
+    //   // Client-side validation logic
+    //   if (promptLower.includes("nin") || /\d{11}/.test(prompt)) {
+    //     violations.push({
+    //       type: "NIN",
+    //       action: 'block',
+    //       message: "Potential National Identification Number detected."
+    //     });
+    //     reasons.push("nin");
+    //     riskScore = Math.max(riskScore, 95);
+    //   }
+
+    //   if (promptLower.includes("password") || promptLower.includes("secret_key")) {
+    //     violations.push({
+    //       type: "Credentials",
+    //       action: 'block',
+    //       message: "Potential credentials detected."
+    //     });
+    //     reasons.push("credentials");
+    //     riskScore = Math.max(riskScore, 90);
+    //   }
+
+    //   if (promptLower.includes("email") || promptLower.includes("phone")) {
+    //     violations.push({
+    //       type: "PII",
+    //       action: 'warn',
+    //       message: "Personally Identifiable Information detected."
+    //     });
+    //     reasons.push("pii");
+    //     riskScore = Math.max(riskScore, 45);
+    //   }
+
+    //   if (violations.length === 0) {
+    //     riskScore = 5;
+    //   }
+
+    //   const isBlocked = violations.some(v => v.action === 'block');
+    //   const isWarned = violations.some(v => v.action === 'warn');
+
+    //   setResult({
+    //     isValid: !isBlocked,
+    //     violations,
+    //     action: isBlocked ? 'block' : (isWarned ? 'warn' : 'pass'),
+    //     timestamp: new Date().toISOString(),
+    //     risk_score: riskScore,
+    //     reasons: reasons.length > 0 ? reasons : ["none"],
+    //     platform: PLATFORMS.find(p => p.id === selectedPlatform)?.name || 'Unknown'
+    //   });
+    //   setIsLoading(false);
+    // }, 800);
+  
+    submitPrompt.mutate({
+      businessId: state?.organization?.id ?? "",
+      payload: {
+        business_reference : state?.organization?.reference,
+        business_member_id: bussines_member_id,
+        ai_tool: selectedPlatform,
+        prompt: prompt
       }
-
-      if (promptLower.includes("password") || promptLower.includes("secret_key")) {
-        violations.push({
-          type: "Credentials",
-          action: 'block',
-          message: "Potential credentials detected."
-        });
-        reasons.push("credentials");
-        riskScore = Math.max(riskScore, 90);
-      }
-
-      if (promptLower.includes("email") || promptLower.includes("phone")) {
-        violations.push({
-          type: "PII",
-          action: 'warn',
-          message: "Personally Identifiable Information detected."
-        });
-        reasons.push("pii");
-        riskScore = Math.max(riskScore, 45);
-      }
-
-      if (violations.length === 0) {
-        riskScore = 5;
-      }
-
-      const isBlocked = violations.some(v => v.action === 'block');
-      const isWarned = violations.some(v => v.action === 'warn');
-
-      setResult({
-        isValid: !isBlocked,
-        violations,
-        action: isBlocked ? 'block' : (isWarned ? 'warn' : 'pass'),
-        timestamp: new Date().toISOString(),
-        risk_score: riskScore,
-        reasons: reasons.length > 0 ? reasons : ["none"],
-        platform: PLATFORMS.find(p => p.id === selectedPlatform)?.name || 'Unknown'
-      });
-      setIsLoading(false);
-    }, 800);
+    })
   };
 
   const getActionIcon = (action: string) => {
@@ -132,12 +186,13 @@ export const Prompting: React.FC = () => {
               onChange={(e) => setSelectedPlatform(e.target.value)}
               className="w-full pl-4 pr-10 py-2.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-sm font-medium text-slate-700 dark:text-slate-200 focus:ring-2 focus:ring-brand-500 outline-none appearance-none shadow-sm cursor-pointer"
             >
-              {PLATFORMS.map(p => (
-                <option key={p.id} value={p.id}>{p.name}</option>
+              {(plaforms?.data?.data ?? []).map(p => (
+                <option key={p.id} value={p.tool_name}>{p.tool_name}</option>
               ))}
             </select>
-            <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+            <div className="absolute inset-y-0 right-0 flex gap-2 items-center pr-3 pointer-events-none">
               <Globe className="w-4 h-4 text-slate-400" />
+              <ChevronDown/>
             </div>
           </div>
         </div>
@@ -163,10 +218,10 @@ export const Prompting: React.FC = () => {
               />
               <button
                 type="submit"
-                disabled={isLoading || !prompt.trim()}
+                disabled={submitPrompt.isPending || !prompt.trim()}
                 className="w-full flex items-center justify-center py-3.5 px-4 bg-brand-600 text-white rounded-xl hover:bg-brand-700 transition-all shadow-md font-bold disabled:opacity-50 disabled:cursor-not-allowed active:scale-[0.98]"
               >
-                {isLoading ? (
+                {submitPrompt.isPending ? (
                   <>
                     <Loader2 className="w-5 h-5 mr-2 animate-spin" />
                     Analyzing Content...

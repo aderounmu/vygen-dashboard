@@ -12,6 +12,7 @@ export const Dashboard: React.FC = () => {
   const { state, dispatch } = useStore();
 
   const business = useGetBusinesses()
+//   const user = us
   React.useEffect(() => {
    const _business = business.data?.data[0]
    if(_business){

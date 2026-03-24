@@ -35,7 +35,7 @@ export const Policies: React.FC = () => {
   const [showPolicyModal, setShowPolicyModal] = useState(false);
   console.log(state, "<!_-----!?");
 
-  const platforms = useGetAiToolConfigurations(state.organization.id);
+  const platforms = useGetAiToolConfigurations(state?.organization?.id ?? "");
 
   const addPlatform = useCreateAiToolConfiguration({
     successFn: () => {
@@ -55,7 +55,7 @@ export const Policies: React.FC = () => {
     },
   });
 
-  const configs = useGetDataClassificationConfigurations(state.organization.id);
+  const configs = useGetDataClassificationConfigurations(state?.organization?.id ?? "");
 
   const [newPlatform, setNewPlatform] = useState<Partial<AIPlatform>>({
     tool_name: "",
