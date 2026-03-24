@@ -16,6 +16,7 @@ import {
   AlertTriangle,
   CheckCircle,
   Ban,
+  Loader2,
 } from "lucide-react";
 import {
   useCreateAiToolConfiguration,
@@ -40,6 +41,7 @@ export const Policies: React.FC = () => {
   const addPlatform = useCreateAiToolConfiguration({
     successFn: () => {
       toast.success(`Platform Added successfullly`);
+      setShowPlatformModal(false);
     },
     failureFn(error, variables, context) {
       toast.error(`Error occured Added Platform`);
@@ -48,7 +50,9 @@ export const Policies: React.FC = () => {
 
   const addConfig = useCreateDataClassificationConfiguration({
     successFn: () => {
+
       toast.success(`Config Added successfullly`);
+      setShowPolicyModal(false);
     },
     failureFn(error, variables, context) {
       toast.error(`Config occured Added Platform`);
@@ -109,7 +113,7 @@ export const Policies: React.FC = () => {
         is_enabled: newPolicy.is_enabled ?? true,
       },
     });
-    setShowPolicyModal(false);
+    
     // setNewPolicy({
     //   name: "",
     //   description: "",
@@ -148,7 +152,7 @@ export const Policies: React.FC = () => {
     });
 
     // dispatch({ type: 'ADD_PLATFORM', payload: platform });
-    setShowPlatformModal(false);
+    
     // setNewPlatform({ tool_name: '', domain: '', is_allowed: true });
   };
 
@@ -457,7 +461,7 @@ export const Policies: React.FC = () => {
                   type="submit"
                   className="flex-1 px-4 py-2 bg-brand-600 text-white rounded-lg hover:bg-brand-700 transition-colors shadow-sm font-medium"
                 >
-                  Add Platform
+                   {addPlatform.isPending ? <Loader2 className="w-5 h-5 animate-spin" />:"Add Platform"}
                 </button>
               </div>
             </form>
@@ -613,7 +617,7 @@ export const Policies: React.FC = () => {
                   type="submit"
                   className="flex-1 px-4 py-2 bg-brand-600 text-white rounded-lg hover:bg-brand-700 transition-colors shadow-sm font-medium"
                 >
-                  Create Policy
+                  {addConfig.isPending ? <Loader2 className="w-5 h-5 animate-spin" />: "Create Policy"}
                 </button>
               </div>
             </form>
