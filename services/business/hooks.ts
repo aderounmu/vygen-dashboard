@@ -21,6 +21,7 @@ import {
   GetBusinessRolesResponse,
   UnassignBusinessRolePermissionsRequest,
   UnassignBusinessRolePermissionsResponse,
+  GetBusinessMemberResponse
 } from "./types";
 
 /* =========================
@@ -33,10 +34,13 @@ export const businessQueryKeys = {
   detail: (id: string) => [...businessQueryKeys.all, "detail", id] as const,
   members: (businessId: string) =>
     [...businessQueryKeys.all, "members", businessId] as const,
+  member: (businessId: string) =>
+    [...businessQueryKeys.all, "member", businessId] as const,
   roles: (businessId: string) =>
     [...businessQueryKeys.all, "roles", businessId] as const,
   role: (businessId: string, roleId: string) =>
     [...businessQueryKeys.all, "roles", businessId, roleId] as const,
+  
 };
 
 /* =========================
@@ -122,6 +126,16 @@ export const getBusinessRoles = async (
   return response.data;
 };
 
+export const getBusinessMember = async (
+  businessId: string
+): Promise<GetBusinessMemberResponse> => {
+  const response = await api.get<GetBusinessMemberResponse>(
+    `/business/${businessId}/member`
+  );
+
+  return response.data;
+};
+
 /* =========================
    QUERIES
 ========================= */
@@ -165,6 +179,21 @@ export const useGetBusinesses = (
   return useQuery<GetBusinessesResponse, AxiosError<ApiErrorResponse>>({
     queryKey: businessQueryKeys.lists(),
     queryFn: getBusinesses,
+    ...options,
+  });
+};
+
+export const useGetBusinessMember = (
+  businessId: string,
+  options?: Omit<
+    UseQueryOptions<GetBusinessMemberResponse, AxiosError<ApiErrorResponse>>,
+    "queryKey" | "queryFn"
+  >
+) => {
+  return useQuery<GetBusinessMemberResponse, AxiosError<ApiErrorResponse>>({
+    queryKey: businessQueryKeys.member(businessId),
+    queryFn: () => getBusinessMember(businessId),
+    enabled: !!businessId,
     ...options,
   });
 };

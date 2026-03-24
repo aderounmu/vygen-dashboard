@@ -4,6 +4,7 @@ import { useGetAiToolConfigurations, useGetDataClassificationConfigurations } fr
 import { AppState, useStore } from '@/context/Store';
 import { useSubmitPrompt } from '@/services/prompt/hook';
 import { toast } from 'sonner';
+import { useGetBusinessMember } from '@/services/business/hooks';
 
 
 type actionType = 'block' | 'warn' | 'pass'
@@ -43,6 +44,10 @@ export const Prompting: React.FC = () => {
 
   const plaforms = useGetAiToolConfigurations(state?.organization?.id ?? "")
   const [selectedPlatform, setSelectedPlatform] = useState((plaforms?.data?.data ?? [])[0]?.tool_name);
+
+  const bussiness_member = useGetBusinessMember(
+    state?.organization?.id ?? ""
+  )
 
 
   const submitPrompt = useSubmitPrompt(
@@ -144,7 +149,7 @@ export const Prompting: React.FC = () => {
     submitPrompt.mutate({
       businessId: state?.organization?.id ?? "",
       payload: {
-        business_reference : state?.organization?.reference,
+        business_reference : bussiness_member.data.data.id ?? "",
         business_member_id: bussines_member_id,
         ai_tool: selectedPlatform,
         prompt: prompt
@@ -212,7 +217,7 @@ export const Prompting: React.FC = () => {
             <form onSubmit={handleValidate} className="space-y-4">
               <textarea
                 className="w-full h-80 p-4 rounded-xl border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:ring-2 focus:ring-brand-500 outline-none resize-none font-sans text-sm leading-relaxed"
-                placeholder={`Type your prompt for ${PLATFORMS.find(p => p.id === selectedPlatform)?.name}...`}
+                placeholder={`Type your prompt for ${selectedPlatform?.toLowerCase() ?? ""}...`}
                 value={prompt}
                 onChange={(e) => setPrompt(e.target.value)}
               />

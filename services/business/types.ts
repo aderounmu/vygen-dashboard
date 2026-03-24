@@ -130,3 +130,11 @@ export interface AssignBusinessRolePermissionsResponse
 
 export interface UnassignBusinessRolePermissionsResponse
   extends ApiSuccessResponse<BusinessRole[]> {}
+
+
+  export interface GetBusinessMemberResponse {
+  data: BusinessMember;
+  total_items: number;
+  total_pages: number;
+  current_page: number;
+  }
