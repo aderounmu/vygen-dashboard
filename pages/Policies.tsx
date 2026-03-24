@@ -218,7 +218,7 @@ export const Policies: React.FC = () => {
           </button>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+       {platforms.isLoading ? <div className="flex justify-center py-5 mx-auto"> <Loader2 className="w-5 h-5 animate-spin" /> </div> : <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {(platforms?.data?.data ?? []).map((platform) => (
             <div
               key={platform.id}
@@ -266,7 +266,7 @@ export const Policies: React.FC = () => {
               </div>
             </div>
           ))}
-        </div>
+        </div>}
       </section>
 
       {/* DLP Policies Section */}
@@ -287,7 +287,7 @@ export const Policies: React.FC = () => {
           </button>
         </div>
 
-        <div className="grid gap-4">
+        {configs.isLoading ? <div className="flex justify-center py-5 mx-auto"> <Loader2 className="w-5 h-5 animate-spin" /> </div> :<div className="grid gap-4">
           {(configs?.data?.data ?? []).map((policy) => (
             // {(configs?.data?.data ?? []).map((policy) => (
             <div
@@ -371,7 +371,7 @@ export const Policies: React.FC = () => {
               </div>
             </div>
           ))}
-        </div>
+        </div>}
       </section>
 
       {/* Add Platform Modal */}
