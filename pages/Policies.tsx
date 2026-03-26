@@ -50,8 +50,16 @@ export const Policies: React.FC = () => {
 
   const addConfig = useCreateDataClassificationConfiguration({
     successFn: () => {
-
       toast.success(`Config Added successfullly`);
+      setNewPolicy({
+        name: "",
+        description: "",
+        data_type: "",
+        action: ActionType.BLOCK,
+        priority: 1,
+        is_enabled: true,
+        domains: "",
+      });
       setShowPolicyModal(false);
     },
     failureFn(error, variables, context) {
@@ -59,7 +67,9 @@ export const Policies: React.FC = () => {
     },
   });
 
-  const configs = useGetDataClassificationConfigurations(state?.organization?.id ?? "");
+  const configs = useGetDataClassificationConfigurations(
+    state?.organization?.id ?? "",
+  );
 
   const [newPlatform, setNewPlatform] = useState<Partial<AIPlatform>>({
     tool_name: "",
@@ -74,6 +84,7 @@ export const Policies: React.FC = () => {
     action: ActionType.BLOCK,
     priority: 1,
     is_enabled: true,
+    domains: "",
   });
 
   const togglePolicy = (policy: Policy) => {
@@ -102,18 +113,27 @@ export const Policies: React.FC = () => {
     // };
 
     // dispatch({ type: "ADD_POLICY", payload: policy });
+    const payload = {
+      //name: newPolicy.name,
+      // description: newPolicy.description || "",
+      data_type: newPolicy.data_type,
+      action: newPolicy.action as ActionType,
+      priority: Number(newPolicy.priority) || 1,
+      is_enabled: newPolicy.is_enabled ?? true,
+    } as any;
+
+    if (payload.data_type === "email") {
+      const domains = newPolicy.domains
+        .split(",")
+        .map((d) => d.trim())
+        .filter((d) => d !== "");
+      payload.metadata = { domains };
+    }
     addConfig.mutate({
-      businessId: state.organization.id,
-      payload: {
-        //name: newPolicy.name,
-        // description: newPolicy.description || "",
-        data_type: newPolicy.data_type,
-        action: newPolicy.action as ActionType,
-        priority: Number(newPolicy.priority) || 1,
-        is_enabled: newPolicy.is_enabled ?? true,
-      },
+      businessId: state?.organization?.id,
+      payload,
     });
-    
+
     // setNewPolicy({
     //   name: "",
     //   description: "",
@@ -141,9 +161,9 @@ export const Policies: React.FC = () => {
     //   domain: newPlatform.domain,
     //   is_allowed: newPlatform.is_allowed ?? true,
     // };
-
+    console.log(state?.organization?.id);
     addPlatform.mutate({
-      businessId: state.organization.id,
+      businessId: state?.organization?.id,
       payload: {
         tool_name: newPlatform.tool_name,
         domain: newPlatform.domain,
@@ -152,7 +172,7 @@ export const Policies: React.FC = () => {
     });
 
     // dispatch({ type: 'ADD_PLATFORM', payload: platform });
-    
+
     // setNewPlatform({ tool_name: '', domain: '', is_allowed: true });
   };
 
@@ -218,55 +238,62 @@ export const Policies: React.FC = () => {
           </button>
         </div>
 
-       {platforms.isLoading ? <div className="flex justify-center py-5 mx-auto"> <Loader2 className="w-5 h-5 animate-spin" /> </div> : <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {(platforms?.data?.data ?? []).map((platform) => (
-            <div
-              key={platform.id}
-              className="bg-white dark:bg-slate-800 p-4 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm hover:shadow-md transition-shadow"
-            >
-              <div className="flex justify-between items-start">
-                <div className="flex items-center space-x-3">
-                  <div
-                    className={`p-2 rounded-lg ${platform.is_allowed ? "bg-emerald-50 text-emerald-600 dark:bg-emerald-900/20" : "bg-red-50 text-red-600 dark:bg-red-900/20"}`}
-                  >
-                    {platform.is_allowed ? (
-                      <ShieldCheck className="w-5 h-5" />
-                    ) : (
-                      <ShieldAlert className="w-5 h-5" />
-                    )}
+        {platforms.isLoading ? (
+          <div className="flex justify-center py-5 mx-auto">
+            {" "}
+            <Loader2 className="w-5 h-5 animate-spin" />{" "}
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {(platforms?.data?.data ?? []).map((platform) => (
+              <div
+                key={platform.id}
+                className="bg-white dark:bg-slate-800 p-4 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm hover:shadow-md transition-shadow"
+              >
+                <div className="flex justify-between items-start">
+                  <div className="flex items-center space-x-3">
+                    <div
+                      className={`p-2 rounded-lg ${platform.is_allowed ? "bg-emerald-50 text-emerald-600 dark:bg-emerald-900/20" : "bg-red-50 text-red-600 dark:bg-red-900/20"}`}
+                    >
+                      {platform.is_allowed ? (
+                        <ShieldCheck className="w-5 h-5" />
+                      ) : (
+                        <ShieldAlert className="w-5 h-5" />
+                      )}
+                    </div>
+                    <div>
+                      <h3 className="font-semibold text-slate-900 dark:text-white">
+                        {platform.tool_name}
+                      </h3>
+                      <p className="text-xs text-slate-500 dark:text-slate-400 font-mono">
+                        {platform.domain}
+                      </p>
+                    </div>
                   </div>
-                  <div>
-                    <h3 className="font-semibold text-slate-900 dark:text-white">
-                      {platform.tool_name}
-                    </h3>
-                    <p className="text-xs text-slate-500 dark:text-slate-400 font-mono">
-                      {platform.domain}
-                    </p>
+                  <div className="flex items-center space-x-1">
+                    <button
+                      onClick={() => togglePlatform(platform)}
+                      className={`p-1 rounded-md transition-colors ${platform.is_allowed ? "text-emerald-600 hover:bg-emerald-50" : "text-slate-400 hover:bg-slate-100"}`}
+                      title={platform.is_allowed ? "Allowed" : "Blocked"}
+                    >
+                      {platform.is_allowed ? (
+                        <ToggleRight className="w-6 h-6" />
+                      ) : (
+                        <ToggleLeft className="w-6 h-6" />
+                      )}
+                    </button>
+                    <button
+                      onClick={() => deletePlatform(platform.id)}
+                      className="p-1 text-slate-400 hover:text-red-500 transition-colors"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
                   </div>
-                </div>
-                <div className="flex items-center space-x-1">
-                  <button
-                    onClick={() => togglePlatform(platform)}
-                    className={`p-1 rounded-md transition-colors ${platform.is_allowed ? "text-emerald-600 hover:bg-emerald-50" : "text-slate-400 hover:bg-slate-100"}`}
-                    title={platform.is_allowed ? "Allowed" : "Blocked"}
-                  >
-                    {platform.is_allowed ? (
-                      <ToggleRight className="w-6 h-6" />
-                    ) : (
-                      <ToggleLeft className="w-6 h-6" />
-                    )}
-                  </button>
-                  <button
-                    onClick={() => deletePlatform(platform.id)}
-                    className="p-1 text-slate-400 hover:text-red-500 transition-colors"
-                  >
-                    <Trash2 className="w-4 h-4" />
-                  </button>
                 </div>
               </div>
-            </div>
-          ))}
-        </div>}
+            ))}
+          </div>
+        )}
       </section>
 
       {/* DLP Policies Section */}
@@ -287,91 +314,98 @@ export const Policies: React.FC = () => {
           </button>
         </div>
 
-        {configs.isLoading ? <div className="flex justify-center py-5 mx-auto"> <Loader2 className="w-5 h-5 animate-spin" /> </div> :<div className="grid gap-4">
-          {(configs?.data?.data ?? []).map((policy) => (
-            // {(configs?.data?.data ?? []).map((policy) => (
-            <div
-              key={policy.id}
-              className={`bg-white dark:bg-slate-800 rounded-xl border transition-all ${policy.is_enabled ? "border-slate-200 dark:border-slate-700 shadow-sm" : "border-slate-100 dark:border-slate-800 opacity-60"}`}
-            >
-              <div className="p-5">
-                <div className="flex items-start justify-between">
-                  <div className="flex items-center space-x-3">
-                    <div
-                      className={`p-2 rounded-lg ${policy.is_enabled ? "bg-brand-50 text-brand-600 dark:bg-slate-700 dark:text-brand-400" : "bg-slate-100 text-slate-400 dark:bg-slate-800"}`}
-                    >
-                      <ListFilter className="w-5 h-5" />
-                    </div>
-                    <div>
-                      <div className="flex items-center space-x-2">
-                        <h3 className="text-base font-semibold text-slate-900 dark:text-white">
-                          {policy.data_type} policy
-                        </h3>
-                        <span className="px-2 py-0.5 bg-slate-100 dark:bg-slate-700 text-slate-500 dark:text-slate-400 text-[10px] font-bold rounded uppercase tracking-wider">
-                          Priority {policy.priority}
-                        </span>
+        {configs.isLoading ? (
+          <div className="flex justify-center py-5 mx-auto">
+            {" "}
+            <Loader2 className="w-5 h-5 animate-spin" />{" "}
+          </div>
+        ) : (
+          <div className="grid gap-4">
+            {(configs?.data?.data ?? []).map((policy) => (
+              // {(configs?.data?.data ?? []).map((policy) => (
+              <div
+                key={policy.id}
+                className={`bg-white dark:bg-slate-800 rounded-xl border transition-all ${policy.is_enabled ? "border-slate-200 dark:border-slate-700 shadow-sm" : "border-slate-100 dark:border-slate-800 opacity-60"}`}
+              >
+                <div className="p-5">
+                  <div className="flex items-start justify-between">
+                    <div className="flex items-center space-x-3">
+                      <div
+                        className={`p-2 rounded-lg ${policy.is_enabled ? "bg-brand-50 text-brand-600 dark:bg-slate-700 dark:text-brand-400" : "bg-slate-100 text-slate-400 dark:bg-slate-800"}`}
+                      >
+                        <ListFilter className="w-5 h-5" />
                       </div>
-                      <p className="text-sm text-slate-500 dark:text-slate-400">
-                        Policy that {policy.action}s {policy.data_type}
-                      </p>
+                      <div>
+                        <div className="flex items-center space-x-2">
+                          <h3 className="text-base font-semibold text-slate-900 dark:text-white">
+                            {policy.data_type} policy
+                          </h3>
+                          <span className="px-2 py-0.5 bg-slate-100 dark:bg-slate-700 text-slate-500 dark:text-slate-400 text-[10px] font-bold rounded uppercase tracking-wider">
+                            Priority {policy.priority}
+                          </span>
+                        </div>
+                        <p className="text-sm text-slate-500 dark:text-slate-400">
+                          Policy that {policy.action}s {policy.data_type}
+                        </p>
+                      </div>
                     </div>
-                  </div>
-                  {/* <button onClick={() => togglePolicy(policy)} className="text-brand-600 hover:text-brand-700 dark:text-brand-400 focus:outline-none">
+                    {/* <button onClick={() => togglePolicy(policy)} className="text-brand-600 hover:text-brand-700 dark:text-brand-400 focus:outline-none">
                                 {policy.is_enabled ? <ToggleRight className="w-8 h-8" /> : <ToggleLeft className="w-8 h-8 text-slate-400" />}
                             </button> */}
-                  <button
-                    onClick={() => null}
-                    className="text-brand-600 hover:text-brand-700 dark:text-brand-400 focus:outline-none"
-                  >
-                    {policy.is_enabled ? (
-                      <ToggleRight className="w-8 h-8" />
-                    ) : (
-                      <ToggleLeft className="w-8 h-8 text-slate-400" />
-                    )}
-                  </button>
-                </div>
-
-                {/* Logic Builder Visualization */}
-                <div className="mt-4 bg-slate-50 dark:bg-slate-900/50 rounded-lg p-3 border border-slate-200 dark:border-slate-700/50">
-                  <div className="flex flex-wrap items-center gap-2 text-sm">
-                    <span className="font-mono text-[10px] text-slate-500 uppercase tracking-widest">
-                      IF
-                    </span>
-                    <div className="px-2 py-1 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded text-slate-700 dark:text-slate-200 font-medium text-xs">
-                      Data contains{" "}
-                      <span className="text-brand-600 font-bold">
-                        {policy.data_type}
-                      </span>
-                    </div>
-                    <span className="font-mono text-[10px] text-slate-500 uppercase tracking-widest">
-                      THEN
-                    </span>
-                    <div
-                      className={`px-2 py-1 border rounded font-bold flex items-center gap-1.5 text-xs uppercase tracking-tight ${getActionStyles(policy.action as ActionType)}`}
+                    <button
+                      onClick={() => null}
+                      className="text-brand-600 hover:text-brand-700 dark:text-brand-400 focus:outline-none"
                     >
-                      {getActionIcon(policy.action as ActionType)}
-                      {policy.action}
+                      {policy.is_enabled ? (
+                        <ToggleRight className="w-8 h-8" />
+                      ) : (
+                        <ToggleLeft className="w-8 h-8 text-slate-400" />
+                      )}
+                    </button>
+                  </div>
+
+                  {/* Logic Builder Visualization */}
+                  <div className="mt-4 bg-slate-50 dark:bg-slate-900/50 rounded-lg p-3 border border-slate-200 dark:border-slate-700/50">
+                    <div className="flex flex-wrap items-center gap-2 text-sm">
+                      <span className="font-mono text-[10px] text-slate-500 uppercase tracking-widest">
+                        IF
+                      </span>
+                      <div className="px-2 py-1 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded text-slate-700 dark:text-slate-200 font-medium text-xs">
+                        Data contains{" "}
+                        <span className="text-brand-600 font-bold">
+                          {policy.data_type}
+                        </span>
+                      </div>
+                      <span className="font-mono text-[10px] text-slate-500 uppercase tracking-widest">
+                        THEN
+                      </span>
+                      <div
+                        className={`px-2 py-1 border rounded font-bold flex items-center gap-1.5 text-xs uppercase tracking-tight ${getActionStyles(policy.action as ActionType)}`}
+                      >
+                        {getActionIcon(policy.action as ActionType)}
+                        {policy.action}
+                      </div>
                     </div>
                   </div>
-                </div>
 
-                <div className="mt-4 flex justify-end items-center space-x-4 pt-3 border-t border-slate-100 dark:border-slate-800">
-                  <button
-                    onClick={() => deletePolicy(policy.id)}
-                    className="text-xs text-slate-500 hover:text-red-500 flex items-center transition-colors"
-                  >
-                    <Trash2 className="w-3.5 h-3.5 mr-1" />
-                    Delete
-                  </button>
-                  <button className="text-xs font-medium text-brand-600 hover:text-brand-700 flex items-center transition-colors">
-                    <Save className="w-3.5 h-3.5 mr-1" />
-                    Save
-                  </button>
+                  <div className="mt-4 flex justify-end items-center space-x-4 pt-3 border-t border-slate-100 dark:border-slate-800">
+                    <button
+                      onClick={() => deletePolicy(policy.id)}
+                      className="text-xs text-slate-500 hover:text-red-500 flex items-center transition-colors"
+                    >
+                      <Trash2 className="w-3.5 h-3.5 mr-1" />
+                      Delete
+                    </button>
+                    <button className="text-xs font-medium text-brand-600 hover:text-brand-700 flex items-center transition-colors">
+                      <Save className="w-3.5 h-3.5 mr-1" />
+                      Save
+                    </button>
+                  </div>
                 </div>
               </div>
-            </div>
-          ))}
-        </div>}
+            ))}
+          </div>
+        )}
       </section>
 
       {/* Add Platform Modal */}
@@ -461,7 +495,11 @@ export const Policies: React.FC = () => {
                   type="submit"
                   className="flex-1 px-4 py-2 bg-brand-600 text-white rounded-lg hover:bg-brand-700 transition-colors shadow-sm font-medium"
                 >
-                   {addPlatform.isPending ? <Loader2 className="w-5 h-5 animate-spin" />:"Add Platform"}
+                  {addPlatform.isPending ? (
+                    <Loader2 className="w-5 h-5 animate-spin" />
+                  ) : (
+                    "Add Platform"
+                  )}
                 </button>
               </div>
             </form>
@@ -579,6 +617,27 @@ export const Policies: React.FC = () => {
                   <option value={ActionType.PASS}>Pass</option>
                 </select>
               </div>
+              {newPolicy.data_type === "email" && (
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
+                    Domains, comma separated
+                  </label>
+                  <input
+                    type="text"
+                    placeholder="e.g. txrnxp.com, vykensecurity.com"
+                    className="w-full px-4 py-2 rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:ring-2 focus:ring-brand-500 outline-none"
+                    // value={newPolicy.metadata?.domains?.join(", ") || ""}
+                    value={newPolicy.domains}
+                    onChange={(e) => {
+                      const domains = e.target.value;
+                      setNewPolicy({
+                        ...newPolicy,
+                        domains,
+                      });
+                    }}
+                  />
+                </div>
+              )}
               <div className="flex items-center justify-between p-3 bg-slate-50 dark:bg-slate-900 rounded-lg">
                 <div>
                   <p className="text-sm font-medium text-slate-900 dark:text-white">
@@ -617,7 +676,11 @@ export const Policies: React.FC = () => {
                   type="submit"
                   className="flex-1 px-4 py-2 bg-brand-600 text-white rounded-lg hover:bg-brand-700 transition-colors shadow-sm font-medium"
                 >
-                  {addConfig.isPending ? <Loader2 className="w-5 h-5 animate-spin" />: "Create Policy"}
+                  {addConfig.isPending ? (
+                    <Loader2 className="w-5 h-5 animate-spin" />
+                  ) : (
+                    "Create Policy"
+                  )}
                 </button>
               </div>
             </form>

@@ -40,6 +40,8 @@ export interface CreateDataClassificationConfigurationRequest {
   action: string;
   priority: number;
   is_enabled: boolean;
+
+  metadata?: { domains: Array<string> }
 }
 
 /* =========================

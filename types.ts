@@ -74,6 +74,8 @@ export interface Policy {
   action: ActionType;
   priority: number;
   is_enabled: boolean;
+
+  domains?: string;
 }
 
 export interface DashboardMetrics {
@@ -81,6 +83,9 @@ export interface DashboardMetrics {
   sensitivePercentage: number;
   highRiskCount: number;
   preventedLeaks: number;
+
+  metadata?: { domains: Array<string> }
+
 }
 
 export interface AIPlatform {

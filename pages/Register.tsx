@@ -17,6 +17,7 @@ import { useRegister } from "@/services/auth/hook";
 import { useCreateBusiness } from "@/services/business/hooks";
 import { toast } from "sonner";
 import { User } from "@/services/auth/type";
+import PasswordInput from "@/components/PasswordInput";
 
 export const Register: React.FC = () => {
   const [step, setStep] = useState(1);
@@ -297,15 +298,20 @@ export const Register: React.FC = () => {
                   <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
                     <Lock className="h-5 w-5 text-slate-400" />
                   </div>
-                  <input
+                  {/* <input
                     type="password"
                     required
                     className="block w-full pl-11 pr-4 py-3.5 bg-slate-50 dark:bg-slate-900 border-none rounded-2xl text-slate-900 dark:text-white placeholder-slate-400 focus:ring-2 focus:ring-brand-500 transition-all"
                     placeholder="••••••••"
-                    value={userData.password}
+                    value
                     onChange={(e) =>
                       setUserData({ ...userData, password: e.target.value })
                     }
+                  /> */}
+                  <PasswordInput
+                  setPassword={(e) =>
+                      setUserData({ ...userData, password: e})}
+                  password={userData.password}
                   />
                 </div>
               </div>
