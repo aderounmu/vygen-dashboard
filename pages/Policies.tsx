@@ -36,6 +36,18 @@ export const Policies: React.FC = () => {
   const [showPolicyModal, setShowPolicyModal] = useState(false);
   console.log(state, "<!_-----!?");
 
+  const ListOfAvailablePolicies: {key: string; name: string; description: string}[] =  [
+    { key: "ssn", name: "SSN Protection", description: "Protect Social Security Numbers from being shared with AI platforms." },
+    { key: "email", name: "Email Protection", description: "Prevent email addresses from being exposed to AI platforms." },
+    { key: "nin", name: "NIN Protection", description: "Safeguard National Identification Numbers from AI access." },
+    { key: "custom", name: "Custom Pattern", description: "Define a custom regex pattern to protect specific data types."},
+    {key: "source_code", name: "Source Code Protection", description: "Block source code snippets from being shared with AI platforms." },
+    {key: "jwt", name: "JWT Protection", description: "Prevent JSON Web Tokens (JWT) from being exposed to AI platforms." },
+    {key: "aws_keys", name: "AWS Keys Protection", description: "Safeguard AWS Access Keys and Secret Keys from AI access." },
+    { key: "pci", name: "PCI Data Protection", description: "Block Payment Card Industry (PCI) data from AI platforms." },
+    {key : "api_secrets", name: "API Secret Protection", description: "Prevent API secrets and tokens from being shared with AI platforms." },
+  ];
+
   const platforms = useGetAiToolConfigurations(state?.organization?.id ?? "");
 
   const addPlatform = useCreateAiToolConfiguration({
@@ -574,9 +586,15 @@ export const Policies: React.FC = () => {
                       setNewPolicy({ ...newPolicy, data_type: e.target.value })
                     }
                   >
-                    <option value="ssn">SSN</option>
+                    {/* <option value="ssn">SSN</option>
                     <option value="email">Email</option>
-                    <option value="nin">NIN</option>
+                    <option value="nin">NIN</option> */}{
+                      ListOfAvailablePolicies.map((policy) => (
+                        <option key={policy.key} value={policy.key}>
+                          {policy.name}
+                        </option>
+                      ))
+                    }
                   </select>
                 </div>
                 <div>
