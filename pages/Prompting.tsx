@@ -40,7 +40,7 @@ export const Prompting: React.FC = () => {
   const [result, setResult] = useState<ValidationResult | null>(null);
   const [error, setError] = useState<string | null>(null);
 
-  const bussines_member_id = "f4054b61-4e54-4c8b-b74e-af3b60396e17";
+  // const bussines_member_id = "f4054b61-4e54-4c8b-b74e-af3b60396e17";
 
   const plaforms = useGetAiToolConfigurations(state?.organization?.id ?? "")
   const [selectedPlatform, setSelectedPlatform] = useState((plaforms?.data?.data ?? [])[0]?.tool_name);
@@ -48,6 +48,10 @@ export const Prompting: React.FC = () => {
   const bussiness_member = useGetBusinessMember(
     state?.organization?.id ?? ""
   )
+
+  console.log("business member: ", bussiness_member)
+
+  
 
 
   const submitPrompt = useSubmitPrompt(
@@ -145,15 +149,22 @@ export const Prompting: React.FC = () => {
     //   });
     //   setIsLoading(false);
     // }, 800);
+
+    const payload = {
+      business_reference : state.organization.reference ?? "",
+      business_member_id: bussiness_member.data.data.id ?? "",
+      ai_tool: selectedPlatform,
+      prompt: prompt
+    }
+
+    console.log("Submitting prompt: ", {
+      businessId: state?.organization?.id ?? "",
+      payload
+    })
   
     submitPrompt.mutate({
       businessId: state?.organization?.id ?? "",
-      payload: {
-        business_reference : bussiness_member.data.data.id ?? "",
-        business_member_id: bussines_member_id,
-        ai_tool: selectedPlatform,
-        prompt: prompt
-      }
+      payload,
     })
   };
 

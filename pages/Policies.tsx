@@ -76,7 +76,7 @@ export const Policies: React.FC = () => {
       setShowPolicyModal(false);
     },
     failureFn(error, variables, context) {
-      toast.error(`Config occured Added Platform`);
+      toast.error(`Error occured adding Platform`);
     },
   });
 
@@ -148,6 +148,8 @@ export const Policies: React.FC = () => {
     //
 
     if(payload.data_type === "custom") {
+      payload.is_custom_config = true;
+      payload.data_type = newPolicy.name;
       payload.metadata = {
         rules: [newPolicy.custom_pattern || ""]
       }

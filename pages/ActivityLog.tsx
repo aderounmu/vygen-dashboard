@@ -61,19 +61,19 @@ export const ActivityLog: React.FC = () => {
                         <img className="h-8 w-8 rounded-full" src="" alt="" />
                       </div>
                       <div className="ml-3">
-                        <div className="text-sm font-medium text-slate-900 dark:text-white">{event.business_member.email}</div>
+                        <div className="text-sm font-medium text-slate-900 dark:text-white">{event?.business_member?.email ?? ""}</div>
                       </div>
                     </div>
                   </td>
                   {/* <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500 dark:text-slate-400">{event.business_member.business_member_role.role}</td> */}
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500 dark:text-slate-400">
                     <span className="flex items-center gap-1.5">
-                        {event.ai_tool_data.tool_name}
+                        {event?.ai_tool_data?.tool_name ?? ""}
                     </span>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     {/* <RiskBadge level={event.risk_score} /> */}
-                    {event.risk_score}
+                    {event?.risk_score ?? ""}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <RiskBadge action={event.action} />
