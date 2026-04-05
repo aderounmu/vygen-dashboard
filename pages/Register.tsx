@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { useStore } from "../context/Store";
-import Logo from "@/Assets/vyken_security.png";
+import { Logo } from "../components/Logo";
 import {
   Shield,
   User as UserIcon,
@@ -174,7 +174,7 @@ export const Register: React.FC = () => {
               {/* <div className="bg-brand-600 p-2 rounded-xl shadow-lg shadow-brand-500/20">
                 
               </div> */}
-              <img src={Logo} alt="Vykensecurity Logo" className="h-8 w-auto" />
+              <Logo alt="Vykensecurity Logo" className="h-8 w-auto" />
               <h1 className="text-xl font-bold text-slate-900 dark:text-white">
                 Create Account
               </h1>

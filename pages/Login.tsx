@@ -5,7 +5,7 @@ import { Shield, Lock, Mail, ArrowRight, Loader2 } from 'lucide-react';
 import { useLogin } from '@/services/auth/hook';
 import { toast } from 'sonner';
 import PasswordInput from '@/components/PasswordInput';
-import Logo from "@/Assets/vyken_security.png";
+import { Logo } from "../components/Logo";
 
 export const Login: React.FC = () => {
   const [email, setEmail] = useState('');
@@ -117,7 +117,7 @@ export const Login: React.FC = () => {
           </div>
           <h1 className="text-3xl font-bold text-slate-900 dark:text-white tracking-tight">Vyken Security</h1>
           <p className="text-slate-500 dark:text-slate-400 mt-2">AI Governance & Protection</p> */}
-          <img src={Logo} alt="Vykensecurity Logo" className="h-12 w-auto" />
+          <Logo alt="Vykensecurity Logo" className="h-12 w-auto" />
         </div>
 
         {/* Card */}

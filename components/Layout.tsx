@@ -1,6 +1,6 @@
 import React from "react";
 import { NavLink, Outlet, useLocation } from "react-router-dom";
-import Logo from "@/Assets/vyken_security.png";
+import { Logo } from "./Logo";
 import {
   LayoutDashboard,
   ShieldAlert,
@@ -72,7 +72,7 @@ export const Layout: React.FC = () => {
               <span className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">vyken</span>
               <span className="text-[10px] font-bold tracking-[0.2em] text-slate-400 uppercase">Security</span>
             </div> */}
-            <img src={Logo} alt="Vykensecurity Logo" className="h-12 w-auto" />
+            <Logo alt="Vykensecurity Logo" className="h-12 w-auto" />
           </div>
         </div>
 
