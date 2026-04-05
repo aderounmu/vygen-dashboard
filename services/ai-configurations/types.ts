@@ -40,8 +40,12 @@ export interface CreateDataClassificationConfigurationRequest {
   action: string;
   priority: number;
   is_enabled: boolean;
+  is_custom_config: boolean;
 
-  metadata?: { domains: Array<string> }
+  metadata?: { 
+    domains: Array<string> 
+    rules: Array<string>
+  }
 }
 
 /* =========================

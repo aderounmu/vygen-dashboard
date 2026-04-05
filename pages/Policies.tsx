@@ -71,6 +71,7 @@ export const Policies: React.FC = () => {
         priority: 1,
         is_enabled: true,
         domains: "",
+        custom_pattern: "",
       });
       setShowPolicyModal(false);
     },
@@ -97,6 +98,7 @@ export const Policies: React.FC = () => {
     priority: 1,
     is_enabled: true,
     domains: "",
+    custom_pattern: "",
   });
 
   const togglePolicy = (policy: Policy) => {
@@ -132,14 +134,23 @@ export const Policies: React.FC = () => {
       action: newPolicy.action as ActionType,
       priority: Number(newPolicy.priority) || 1,
       is_enabled: newPolicy.is_enabled ?? true,
+      is_custom_config: newPolicy.data_type === "custom" ? true : false,
     } as any;
 
+    
     if (payload.data_type === "email") {
       const domains = newPolicy.domains
         .split(",")
         .map((d) => d.trim())
         .filter((d) => d !== "");
       payload.metadata = { domains };
+    }
+    //
+
+    if(payload.data_type === "custom") {
+      payload.metadata = {
+        rules: [newPolicy.custom_pattern || ""]
+      }
     }
     addConfig.mutate({
       businessId: state?.organization?.id,
@@ -651,6 +662,27 @@ export const Policies: React.FC = () => {
                       setNewPolicy({
                         ...newPolicy,
                         domains,
+                      });
+                    }}
+                  />
+                </div>
+              )}
+               {newPolicy.data_type === "custom" && (
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
+                    Add a regex pattern to identify the custom data type in the format of /your_regex_pattern/
+                  </label>
+                  <input
+                    type="text"
+                    placeholder="e.g. your_regex_pattern"
+                    className="w-full px-4 py-2 rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:ring-2 focus:ring-brand-500 outline-none"
+                    // value={newPolicy.metadata?.domains?.join(", ") || ""}
+                    value={newPolicy?.custom_pattern || ""}
+                    onChange={(e) => {
+                      const custom_pattern = e.target.value;
+                      setNewPolicy({
+                        ...newPolicy,
+                        custom_pattern: custom_pattern,
                       });
                     }}
                   />
