@@ -53,6 +53,21 @@ export const ActivityLog: React.FC = () => {
               </tr>
             </thead>
             <tbody className="bg-white dark:bg-slate-800 divide-y divide-slate-200 dark:divide-slate-700">
+              {
+                 currentData?.isLoading ? (
+                    <tr>
+                        <td colSpan={7} className="px-6 py-4 whitespace-nowrap text-center text-sm text-slate-500 dark:text-slate-400">
+                            Loading events...
+                        </td>
+                    </tr>
+                ) : ( currentData?.data?.data ?? []).length === 0 ? (
+                    <tr>
+                        <td colSpan={7} className="px-6 py-4 whitespace-nowrap text-center text-sm text-slate-500 dark:text-slate-400">
+                            No events found.
+                        </td>
+                    </tr>
+                ) : (<></>)
+              }
               {(currentData?.data?.data ?? []).map((event) => (
                 <tr key={event.id} className="hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors">
                   <td className="px-6 py-4 whitespace-nowrap">

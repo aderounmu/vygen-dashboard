@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { useStore } from "../context/Store";
+import Logo from "@/assets/vyken_security.png";
 import {
   Shield,
   User as UserIcon,
@@ -167,11 +168,13 @@ export const Register: React.FC = () => {
       <div className="max-w-xl w-full">
         {/* Progress Header */}
         <div className="mb-8">
+          <div></div>
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-3">
-              <div className="bg-brand-600 p-2 rounded-xl shadow-lg shadow-brand-500/20">
-                <Shield className="w-6 h-6 text-white" />
-              </div>
+              {/* <div className="bg-brand-600 p-2 rounded-xl shadow-lg shadow-brand-500/20">
+                
+              </div> */}
+              <img src={Logo} alt="Vykensecurity Logo" className="h-8 w-auto" />
               <h1 className="text-xl font-bold text-slate-900 dark:text-white">
                 Create Account
               </h1>
@@ -309,9 +312,10 @@ export const Register: React.FC = () => {
                     }
                   /> */}
                   <PasswordInput
-                  setPassword={(e) =>
-                      setUserData({ ...userData, password: e})}
-                  password={userData.password}
+                    setPassword={(e) =>
+                      setUserData({ ...userData, password: e })
+                    }
+                    password={userData.password}
                   />
                 </div>
               </div>
