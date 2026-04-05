@@ -15,12 +15,12 @@ export const Logo: React.FC<LogoProps> = ({
   return (
     <>
       <img
-        src={LogoLight}
+        src={LogoDark}
         className={`block dark:hidden ${className}`}
         alt={alt}
       />
       <img
-        src={LogoDark}
+        src={LogoLight}
         className={`hidden dark:block ${className}`}
         alt={alt}
       />
