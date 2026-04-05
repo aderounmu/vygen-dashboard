@@ -5,7 +5,7 @@ import { Shield, Lock, Mail, ArrowRight, Loader2 } from 'lucide-react';
 import { useLogin } from '@/services/auth/hook';
 import { toast } from 'sonner';
 import PasswordInput from '@/components/PasswordInput';
-import Logo from "@/assets/vyken_security.png";
+import Logo from "@/Assets/vyken_security.png";
 
 export const Login: React.FC = () => {
   const [email, setEmail] = useState('');

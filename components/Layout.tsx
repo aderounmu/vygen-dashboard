@@ -1,6 +1,6 @@
 import React from "react";
 import { NavLink, Outlet, useLocation } from "react-router-dom";
-import Logo from "@/assets/vyken_security.png";
+import Logo from "@/Assets/vyken_security.png";
 import {
   LayoutDashboard,
   ShieldAlert,

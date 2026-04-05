@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { useStore } from "../context/Store";
-import Logo from "@/assets/vyken_security.png";
+import Logo from "@/Assets/vyken_security.png";
 import {
   Shield,
   User as UserIcon,
