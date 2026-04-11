@@ -76,6 +76,8 @@ export interface Policy {
   is_enabled: boolean;
 
   domains?: string;
+
+  custom_pattern?: string;
 }
 
 export interface DashboardMetrics {

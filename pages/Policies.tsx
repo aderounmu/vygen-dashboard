@@ -1,3 +1,9 @@
+/**
+ * 
+ * NOTE !!! Requires refactor and cleanup. This is a rushed implementation to get the feature out. Will be cleaned up in the next iteration.
+ * NEED Extension decoupling of components and services. The current implementation is tightly coupled and needs to be refactored to be more modular and maintainable.
+ */
+
 import React, { useState } from "react";
 import { Action, AppState, useStore } from "../context/Store";
 import { ActionType, Policy, AIPlatform } from "../types";
@@ -17,15 +23,21 @@ import {
   CheckCircle,
   Ban,
   Loader2,
+  Pencil,
 } from "lucide-react";
 import {
   useCreateAiToolConfiguration,
   useCreateDataClassificationConfiguration,
+  useDeleteAiToolConfiguration,
+  useDeleteDataClassificationConfiguration,
   useGetAiToolConfigurations,
   useGetDataClassificationConfigurations,
+  useUpdateAiToolConfiguration,
 } from "@/services/ai-configurations/hooks";
 import { AppDispatch } from "recharts/types/state/store";
 import { toast } from "sonner";
+import { set } from "@project-serum/anchor/dist/cjs/utils/features";
+import { DataClassificationConfiguration } from "@/services/ai-configurations/types";
 
 export const Policies: React.FC = () => {
   const {
@@ -34,63 +46,9 @@ export const Policies: React.FC = () => {
   }: { state: AppState; dispatch: React.Dispatch<Action> } = useStore();
   const [showPlatformModal, setShowPlatformModal] = useState(false);
   const [showPolicyModal, setShowPolicyModal] = useState(false);
-  console.log(state, "<!_-----!?");
-
-  const ListOfAvailablePolicies: {key: string; name: string; description: string}[] =  [
-    { key: "ssn", name: "SSN Protection", description: "Protect Social Security Numbers from being shared with AI platforms." },
-    { key: "email", name: "Email Protection", description: "Prevent email addresses from being exposed to AI platforms." },
-    { key: "nin", name: "NIN Protection", description: "Safeguard National Identification Numbers from AI access." },
-    { key: "custom", name: "Custom Pattern", description: "Define a custom regex pattern to protect specific data types."},
-    {key: "source_code", name: "Source Code Protection", description: "Block source code snippets from being shared with AI platforms." },
-    {key: "jwt", name: "JWT Protection", description: "Prevent JSON Web Tokens (JWT) from being exposed to AI platforms." },
-    {key: "aws_keys", name: "AWS Keys Protection", description: "Safeguard AWS Access Keys and Secret Keys from AI access." },
-    { key: "pci", name: "PCI Data Protection", description: "Block Payment Card Industry (PCI) data from AI platforms." },
-    {key : "api_secrets", name: "API Secret Protection", description: "Prevent API secrets and tokens from being shared with AI platforms." },
-  ];
-
-  const platforms = useGetAiToolConfigurations(state?.organization?.id ?? "");
-
-  const addPlatform = useCreateAiToolConfiguration({
-    successFn: () => {
-      toast.success(`Platform Added successfullly`);
-      setShowPlatformModal(false);
-    },
-    failureFn(error, variables, context) {
-      toast.error(`Error occured Added Platform`);
-    },
-  });
-
-  const addConfig = useCreateDataClassificationConfiguration({
-    successFn: () => {
-      toast.success(`Config Added successfullly`);
-      setNewPolicy({
-        name: "",
-        description: "",
-        data_type: "",
-        action: ActionType.BLOCK,
-        priority: 1,
-        is_enabled: true,
-        domains: "",
-        custom_pattern: "",
-      });
-      setShowPolicyModal(false);
-    },
-    failureFn(error, variables, context) {
-      toast.error(`Error occured adding Platform`);
-    },
-  });
-
-  const configs = useGetDataClassificationConfigurations(
-    state?.organization?.id ?? "",
-  );
-
-  const [newPlatform, setNewPlatform] = useState<Partial<AIPlatform>>({
-    tool_name: "",
-    domain: "",
-    is_allowed: true,
-  });
-
-  const [newPolicy, setNewPolicy] = useState<Partial<Policy>>({
+  const [isEditingPolicy, setIsEditingPolicy] = useState(false);
+  const [isEditingPlatform, setIsEditingPlatform] = useState(false);
+  const defaultPolicyValues: Partial<Policy> = {
     name: "",
     description: "",
     data_type: "",
@@ -99,8 +57,134 @@ export const Policies: React.FC = () => {
     is_enabled: true,
     domains: "",
     custom_pattern: "",
+  }
+
+  const defaultPlatformValues: Partial<AIPlatform> = {
+    tool_name: "",
+    domain: "",
+    is_allowed: true,
+  }
+
+
+  const ListOfAvailablePolicies: { key: string; name: string; description: string }[] = [
+    { key: "", name: "select policy", description: "Please select a policy" },
+    { key: "ssn", name: "SSN Protection", description: "Protect Social Security Numbers from being shared with AI platforms." },
+    { key: "email", name: "Email Protection", description: "Prevent email addresses from being exposed to AI platforms." },
+    { key: "nin", name: "NIN Protection", description: "Safeguard National Identification Numbers from AI access." },
+    { key: "custom", name: "Custom Pattern", description: "Define a custom regex pattern to protect specific data types." },
+    { key: "source_code", name: "Source Code Protection", description: "Block source code snippets from being shared with AI platforms." },
+    { key: "jwt", name: "JWT Protection", description: "Prevent JSON Web Tokens (JWT) from being exposed to AI platforms." },
+    { key: "aws_keys", name: "AWS Keys Protection", description: "Safeguard AWS Access Keys and Secret Keys from AI access." },
+    { key: "pci", name: "PCI Data Protection", description: "Block Payment Card Industry (PCI) data from AI platforms." },
+    { key: "api_secrets", name: "API Secret Protection", description: "Prevent API secrets and tokens from being shared with AI platforms." },
+  ];
+
+   //states to ensure right spinner for delete action , will change when refactored to decouple components and services
+  // since id's are uuids, we can use the id to track which policy or platform is being deleted and show the spinner accordingly
+  const [listOfDeletId , setDeleteId] = useState<Record<string, boolean>| null>();
+
+  const removeItemFromDeleteId = (id: string) => {
+    setDeleteId((prev) => {
+      if (!prev) return null;
+      const newState = { ...prev };
+      delete newState[id];
+      return newState;
+    });
+  }
+
+
+  // Hooks 
+  const platforms = useGetAiToolConfigurations(state?.organization?.id ?? "");
+
+  const addPlatform = useCreateAiToolConfiguration({
+    successFn: () => {
+      toast.success(`Platform Added successfullly`);
+      setNewPlatform(defaultPlatformValues);
+      setIsEditingPlatform(false);
+      setShowPlatformModal(false);
+    },
+    failureFn(error, variables, context) {
+      toast.error(`Error occured Added Platform`);
+    },
   });
 
+  const updatePlatform = useUpdateAiToolConfiguration({
+    successFn: () => {
+      toast.success(`Platform Updated successfullly`);
+      setNewPlatform(defaultPlatformValues);
+      setIsEditingPlatform(false);
+      setShowPlatformModal(false);
+    },
+    failureFn(error, variables, context) {
+      toast.error(`Error occured updating Platform`);
+    },
+  });
+
+  const deletePlatformHook = useDeleteAiToolConfiguration({
+    successFn: (_ , variables) => {
+      removeItemFromDeleteId(variables.configurationId);
+      toast.success(`Platform Deleted successfullly`);
+    },
+    failureFn(error, variables, context) {
+      removeItemFromDeleteId(variables.configurationId);
+      toast.error(`Error occured deleting Platform`);
+    },
+  });
+
+  const addConfig = useCreateDataClassificationConfiguration({
+    successFn: () => {
+      toast.success(`Config Added successfullly`);
+      setNewPolicy(defaultPolicyValues);
+      setIsEditingPolicy(false);
+      setShowPolicyModal(false);
+    },
+    failureFn(error, variables, context) {
+      toast.error(`Error occured adding Platform`);
+    },
+  });
+
+  const updateConfig = useUpdateAiToolConfiguration({
+    successFn: () => {
+      toast.success(`Config Updated successfullly`);
+      setNewPolicy(defaultPolicyValues);
+      setIsEditingPolicy(false);
+      setShowPolicyModal(false);
+    },
+    failureFn(error, variables, context) {
+      toast.error(`Error occured updating Platform`);
+    },
+  });
+
+
+  const deleteConfig = useDeleteDataClassificationConfiguration({
+    successFn: (_, variables) => {
+      removeItemFromDeleteId(variables.configurationId);
+      toast.success(`Config Deleted successfullly`);
+    },
+    failureFn(error, variables, context) {
+      removeItemFromDeleteId(variables.configurationId);
+      toast.error(`Error occured deleting Platform`);
+    },
+
+  });
+
+  const configs = useGetDataClassificationConfigurations(
+    state?.organization?.id ?? "",
+  );
+
+
+
+
+
+  const [newPlatform, setNewPlatform] = useState<Partial<AIPlatform>>({
+    tool_name: "",
+    domain: "",
+    is_allowed: true,
+  });
+
+  const [newPolicy, setNewPolicy] = useState<Partial<Policy>>();
+
+ 
   const togglePolicy = (policy: Policy) => {
     dispatch({
       type: "UPDATE_POLICY",
@@ -109,11 +193,41 @@ export const Policies: React.FC = () => {
   };
 
   const deletePolicy = (id: string) => {
+    setDeleteId((prev) => ({ ...prev, [id]: true }));
     dispatch({ type: "DELETE_POLICY", payload: id });
+    deleteConfig.mutate({
+      businessId: state?.organization?.id,
+      configurationId: id,
+    });
   };
 
-  const handleAddPolicy = (e: React.FormEvent) => {
+  const convertPolicyResponseToPolicy = (config: DataClassificationConfiguration): Policy => {
+    const item: Policy = {
+      id: config.id,
+      name: config.data_type,
+      description: "",
+      data_type: config.data_type,
+      action: config.action as ActionType,
+      priority: config.priority,
+      is_enabled: config.is_enabled,
+    };
+
+    if (config.data_type === "email" && config.metadata?.domains) {
+      item.domains = config.metadata.domains.join(", ");
+    }
+
+    if (config.is_custom_config) {
+      item.name = config.data_type;
+      item.custom_pattern = config.metadata?.rules ? config.metadata.rules[0] : "";
+    }
+
+    return item;
+  };
+
+  const handleUpsertPolicy = (e: React.FormEvent) => {
     e.preventDefault();
+    console.log(newPolicy, "New Policy");
+    // return;
     if (!newPolicy.name || !newPolicy.data_type) return;
 
     // const policy: Policy = {
@@ -137,7 +251,7 @@ export const Policies: React.FC = () => {
       is_custom_config: newPolicy.data_type === "custom" ? true : false,
     } as any;
 
-    
+
     if (payload.data_type === "email") {
       const domains = newPolicy.domains
         .split(",")
@@ -147,17 +261,26 @@ export const Policies: React.FC = () => {
     }
     //
 
-    if(payload.data_type === "custom") {
+    if (payload.data_type === "custom") {
       payload.is_custom_config = true;
       payload.data_type = newPolicy.name;
       payload.metadata = {
         rules: [newPolicy.custom_pattern || ""]
       }
     }
-    addConfig.mutate({
-      businessId: state?.organization?.id,
-      payload,
-    });
+    if (isEditingPolicy) {
+      updateConfig.mutate({
+        businessId: state?.organization?.id,
+        configurationId: newPolicy.id ?? "",
+        payload,
+      });
+    } else {
+      addConfig.mutate({
+        businessId: state?.organization?.id,
+        payload,
+      });
+    }
+
 
     // setNewPolicy({
     //   name: "",
@@ -176,7 +299,7 @@ export const Policies: React.FC = () => {
     });
   };
 
-  const handleAddPlatform = (e: React.FormEvent) => {
+  const handleUpsertPlatform = (e: React.FormEvent) => {
     e.preventDefault();
     if (!newPlatform.tool_name || !newPlatform.domain) return;
 
@@ -186,15 +309,29 @@ export const Policies: React.FC = () => {
     //   domain: newPlatform.domain,
     //   is_allowed: newPlatform.is_allowed ?? true,
     // };
-    console.log(state?.organization?.id);
-    addPlatform.mutate({
-      businessId: state?.organization?.id,
-      payload: {
-        tool_name: newPlatform.tool_name,
-        domain: newPlatform.domain,
-        is_allowed: newPlatform.is_allowed ?? true,
-      },
-    });
+    console.log(newPlatform);
+
+    if (isEditingPlatform) {
+      updatePlatform.mutate({
+        businessId: state?.organization?.id,
+        configurationId: newPlatform.id ?? "",
+        payload: {
+          tool_name: newPlatform.tool_name,
+          domain: newPlatform.domain,
+          is_allowed: newPlatform.is_allowed ?? true,
+        },
+      });
+    } else {
+      addPlatform.mutate({
+        businessId: state?.organization?.id,
+        payload: {
+          tool_name: newPlatform.tool_name,
+          domain: newPlatform.domain,
+          is_allowed: newPlatform.is_allowed ?? true,
+        },
+      });
+    }
+
 
     // dispatch({ type: 'ADD_PLATFORM', payload: platform });
 
@@ -202,7 +339,12 @@ export const Policies: React.FC = () => {
   };
 
   const deletePlatform = (id: string) => {
+    setDeleteId((prev) => ({ ...prev, [id]: true }));
     dispatch({ type: "DELETE_PLATFORM", payload: id });
+    deletePlatformHook.mutate({
+      businessId: state?.organization?.id,
+      configurationId: id,
+    })
   };
 
   const getActionIcon = (action: ActionType) => {
@@ -255,7 +397,11 @@ export const Policies: React.FC = () => {
             </h2>
           </div>
           <button
-            onClick={() => setShowPlatformModal(true)}
+            onClick={() => {
+              setIsEditingPlatform(false);
+              setNewPlatform(defaultPlatformValues);
+              setShowPlatformModal(true);
+            }}
             className="inline-flex items-center px-3 py-1.5 bg-brand-600 text-white text-sm font-medium rounded-lg hover:bg-brand-700 transition-colors shadow-sm"
           >
             <Plus className="w-4 h-4 mr-1.5" />
@@ -275,8 +421,8 @@ export const Policies: React.FC = () => {
                 key={platform.id}
                 className="bg-white dark:bg-slate-800 p-4 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm hover:shadow-md transition-shadow"
               >
-                <div className="flex justify-between items-start">
-                  <div className="flex items-center space-x-3">
+                <div className="flex flex-wrap gap-y-3 justify-between items-start">
+                  <div className="flex items-center gap-x-3">
                     <div
                       className={`p-2 rounded-lg ${platform.is_allowed ? "bg-emerald-50 text-emerald-600 dark:bg-emerald-900/20" : "bg-red-50 text-red-600 dark:bg-red-900/20"}`}
                     >
@@ -295,7 +441,7 @@ export const Policies: React.FC = () => {
                       </p>
                     </div>
                   </div>
-                  <div className="flex items-center space-x-1">
+                  <div className="flex items-center gap-x-1">
                     <button
                       onClick={() => togglePlatform(platform)}
                       className={`p-1 rounded-md transition-colors ${platform.is_allowed ? "text-emerald-600 hover:bg-emerald-50" : "text-slate-400 hover:bg-slate-100"}`}
@@ -309,9 +455,26 @@ export const Policies: React.FC = () => {
                     </button>
                     <button
                       onClick={() => deletePlatform(platform.id)}
+                      disabled={deletePlatformHook.isPending}
                       className="p-1 text-slate-400 hover:text-red-500 transition-colors"
                     >
-                      <Trash2 className="w-4 h-4" />
+                      {deletePlatformHook.isPending && listOfDeletId?.[platform.id] ? <Loader2 className="w-3 h-3 animate-spin" /> : <Trash2 className="w-4 h-4" />}
+                    </button>
+
+                    <button
+                      onClick={() => {
+                        setIsEditingPlatform(true);
+                        setNewPlatform({
+                          id: platform.id,
+                          tool_name: platform.tool_name,
+                          domain: platform.domain,
+                          is_allowed: platform.is_allowed,
+                        });
+                        setShowPlatformModal(true);
+                      }}
+                      className="p-1 text-slate-400 hover:text-red-500 transition-colors"
+                    >
+                      <Pencil className="w-4 h-4" />
                     </button>
                   </div>
                 </div>
@@ -331,7 +494,11 @@ export const Policies: React.FC = () => {
             </h2>
           </div>
           <button
-            onClick={() => setShowPolicyModal(true)}
+            onClick={() => {
+              setIsEditingPolicy(false);
+              setNewPolicy(defaultPolicyValues);
+              setShowPolicyModal(true)
+            }}
             className="inline-flex items-center px-3 py-1.5 bg-brand-600 text-white text-sm font-medium rounded-lg hover:bg-brand-700 transition-colors shadow-sm"
           >
             <Plus className="w-4 h-4 mr-1.5" />
@@ -416,14 +583,26 @@ export const Policies: React.FC = () => {
                   <div className="mt-4 flex justify-end items-center space-x-4 pt-3 border-t border-slate-100 dark:border-slate-800">
                     <button
                       onClick={() => deletePolicy(policy.id)}
+                      disabled={deleteConfig.isPending}
                       className="text-xs text-slate-500 hover:text-red-500 flex items-center transition-colors"
                     >
-                      <Trash2 className="w-3.5 h-3.5 mr-1" />
-                      Delete
+                      {deleteConfig.isPending && listOfDeletId?.[policy.id]  ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <>
+                        <Trash2 className="w-3.5 h-3.5 mr-1" />
+                        Delete
+                      </>}
+
                     </button>
-                    <button className="text-xs font-medium text-brand-600 hover:text-brand-700 flex items-center transition-colors">
-                      <Save className="w-3.5 h-3.5 mr-1" />
-                      Save
+                    <button
+                      onClick={() => {
+                        setIsEditingPolicy(true);
+                        setShowPolicyModal(true);
+                        const convertedPolicy = convertPolicyResponseToPolicy(policy);
+                        setNewPolicy(convertedPolicy);
+                      }}
+                      className="text-xs font-medium text-brand-600 hover:text-brand-700 flex items-center transition-colors"
+                    >
+                      <Pencil className="w-3.5 h-3.5 mr-1" />
+                      Edit
                     </button>
                   </div>
                 </div>
@@ -439,16 +618,20 @@ export const Policies: React.FC = () => {
           <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-xl w-full max-w-md border border-slate-200 dark:border-slate-700 overflow-hidden">
             <div className="p-6 border-b border-slate-100 dark:border-slate-700 flex justify-between items-center">
               <h2 className="text-xl font-bold text-slate-900 dark:text-white">
-                Add AI Platform
+                {isEditingPlatform ? "Edit AI Platform" : "Add AI Platform"}
               </h2>
               <button
-                onClick={() => setShowPlatformModal(false)}
+                onClick={() => {
+                  setShowPlatformModal(false)
+                  setIsEditingPlatform(false);
+                  setNewPlatform(defaultPlatformValues);
+                }}
                 className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
               >
                 <X className="w-6 h-6" />
               </button>
             </div>
-            <form onSubmit={handleAddPlatform} className="p-6 space-y-4">
+            <form onSubmit={handleUpsertPlatform} className="p-6 space-y-4">
               <div>
                 <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
                   Platform Name
@@ -520,10 +703,10 @@ export const Policies: React.FC = () => {
                   type="submit"
                   className="flex-1 px-4 py-2 bg-brand-600 text-white rounded-lg hover:bg-brand-700 transition-colors shadow-sm font-medium"
                 >
-                  {addPlatform.isPending ? (
+                  {addPlatform.isPending || updatePlatform.isPending ? (
                     <Loader2 className="w-5 h-5 animate-spin" />
                   ) : (
-                    "Add Platform"
+                    isEditingPlatform ? "Edit Platform" : "Add Platform"
                   )}
                 </button>
               </div>
@@ -538,16 +721,20 @@ export const Policies: React.FC = () => {
           <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-xl w-full max-w-md border border-slate-200 dark:border-slate-700 overflow-hidden">
             <div className="p-6 border-b border-slate-100 dark:border-slate-700 flex justify-between items-center">
               <h2 className="text-xl font-bold text-slate-900 dark:text-white">
-                New DLP Policy
+                {isEditingPolicy ? `Editing DLP Policy` : "New DLP Policy"}
               </h2>
               <button
-                onClick={() => setShowPolicyModal(false)}
+                onClick={() => {
+                  setShowPolicyModal(false)
+                  setIsEditingPolicy(false);
+                  setNewPolicy(defaultPolicyValues);
+                }}
                 className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
               >
                 <X className="w-6 h-6" />
               </button>
             </div>
-            <form onSubmit={handleAddPolicy} className="p-6 space-y-4">
+            <form onSubmit={handleUpsertPolicy} className="p-6 space-y-4">
               <div>
                 <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
                   Policy Name
@@ -669,7 +856,7 @@ export const Policies: React.FC = () => {
                   />
                 </div>
               )}
-               {newPolicy.data_type === "custom" && (
+              {newPolicy.data_type === "custom" && (
                 <div>
                   <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
                     Add a regex pattern to identify the custom data type in the format of /your_regex_pattern/
@@ -728,10 +915,10 @@ export const Policies: React.FC = () => {
                   type="submit"
                   className="flex-1 px-4 py-2 bg-brand-600 text-white rounded-lg hover:bg-brand-700 transition-colors shadow-sm font-medium"
                 >
-                  {addConfig.isPending ? (
+                  {addConfig.isPending || updateConfig.isPending ? (
                     <Loader2 className="w-5 h-5 animate-spin" />
                   ) : (
-                    "Create Policy"
+                    isEditingPolicy ? "Edit Policy" : "Create Policy"
                   )}
                 </button>
               </div>

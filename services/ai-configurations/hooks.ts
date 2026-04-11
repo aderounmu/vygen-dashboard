@@ -12,8 +12,13 @@ import {
   CreateAiToolConfigurationResponse,
   CreateDataClassificationConfigurationRequest,
   CreateDataClassificationConfigurationResponse,
+  DeleteResponse,
   GetAiToolConfigurationsResponse,
   GetDataClassificationConfigurationsResponse,
+  UpdateAiToolConfigurationRequest,
+  UpdateAiToolConfigurationResponse,
+  UpdateDataClassificationConfigurationRequest,
+  UpdateDataClassificationConfigurationResponse,
 } from "./types";
 
 /* =========================
@@ -68,11 +73,51 @@ export const createDataClassificationConfiguration = async (
   return response.data;
 };
 
+
+export const updateDataClassificationConfiguration = async (
+  businessId: string,
+  configurationId: string,
+  payload: UpdateDataClassificationConfigurationRequest
+): Promise<UpdateDataClassificationConfigurationResponse> => {
+  const response =
+    await api.patch<UpdateDataClassificationConfigurationResponse>(
+      `/business/${businessId}/dlp/config/data-classifications/${configurationId}`,
+      payload
+    );
+
+  return response.data;
+};
+
 export const getDataClassificationConfigurations = async (
   businessId: string
 ): Promise<GetDataClassificationConfigurationsResponse> => {
   const response = await api.get<GetDataClassificationConfigurationsResponse>(
     `/business/${businessId}/dlp/config/data-classifications`
+  );
+
+  return response.data;
+};
+
+
+export const deleteAiToolConfiguration = async (
+  businessId: string,
+  configurationId: string
+): Promise<DeleteResponse> => {
+  const response = await api.delete<DeleteResponse>(
+    `/business/${businessId}/dlp/config/ai-tools/${configurationId}`
+  );
+
+  return response.data;
+};
+
+
+
+export const deleteDataClassificationConfiguration = async (
+  businessId: string,
+  configurationId: string
+): Promise<DeleteResponse> => {
+  const response = await api.delete<DeleteResponse>(
+    `/business/${businessId}/dlp/config/data-classifications/${configurationId}`
   );
 
   return response.data;
@@ -118,6 +163,21 @@ export const useGetDataClassificationConfigurations = (
   });
 };
 
+
+export const updateAiToolConfiguration = async (
+  businessId: string,
+  configurationId: string,
+  payload: UpdateAiToolConfigurationRequest
+): Promise<UpdateAiToolConfigurationResponse> => {
+  const response =
+    await api.patch<UpdateAiToolConfigurationResponse>(
+      `/business/${businessId}/dlp/config/ai-tools/${configurationId}`,
+      payload
+    );
+
+  return response.data;
+};
+
 /* =========================
    MUTATION HOOKS
 ========================= */
@@ -126,6 +186,54 @@ export interface CreateAiToolConfigurationVariables {
   businessId: string;
   payload: CreateAiToolConfigurationRequest;
 }
+
+export interface UpdateDataClassificationConfigurationVariables {
+  businessId: string;
+  configurationId: string;
+  payload: UpdateDataClassificationConfigurationRequest;
+}
+
+
+export interface UpdateDataClassificationConfigurationVariables {
+  businessId: string;
+  configurationId: string;
+  payload: UpdateDataClassificationConfigurationRequest;
+}
+
+export const useUpdateDataClassificationConfiguration = (
+  effect?: ApiHookEffect<
+    UpdateDataClassificationConfigurationResponse,
+    UpdateDataClassificationConfigurationVariables,
+    AxiosError<ApiErrorResponse>
+  >
+) => {
+  const queryClient = useQueryClient();
+
+  return useMutation<
+    UpdateDataClassificationConfigurationResponse,
+    AxiosError<ApiErrorResponse>,
+    UpdateDataClassificationConfigurationVariables
+  >({
+    mutationFn: ({ businessId, configurationId, payload }) =>
+      updateDataClassificationConfiguration(
+        businessId,
+        configurationId,
+        payload
+      ),
+    onError: (error, variables, context) => {
+      effect?.failureFn?.(error, variables, context);
+    },
+    onSuccess: async (data, variables, context) => {
+      await queryClient.invalidateQueries({
+        queryKey: aiConfigurationQueryKeys.dataClassifications(
+          variables.businessId
+        ),
+      });
+
+      effect?.successFn?.(data, variables, context);
+    },
+  });
+};
 
 export const useCreateAiToolConfiguration = (
   effect?: ApiHookEffect<
@@ -180,6 +288,122 @@ export const useCreateDataClassificationConfiguration = (
     onError: (error, variables, context) => {
       effect?.failureFn?.(error, variables, context);
     },
+    onSuccess: async (data, variables, context) => {
+      await queryClient.invalidateQueries({
+        queryKey: aiConfigurationQueryKeys.dataClassifications(
+          variables.businessId
+        ),
+      });
+
+      effect?.successFn?.(data, variables, context);
+    },
+  });
+};
+
+
+
+export interface UpdateAiToolConfigurationVariables {
+  businessId: string;
+  configurationId: string;
+  payload: UpdateAiToolConfigurationRequest;
+}
+
+export const useUpdateAiToolConfiguration = (
+  effect?: ApiHookEffect<
+    UpdateAiToolConfigurationResponse,
+    UpdateAiToolConfigurationVariables,
+    AxiosError<ApiErrorResponse>
+  >
+) => {
+  const queryClient = useQueryClient();
+
+  return useMutation<
+    UpdateAiToolConfigurationResponse,
+    AxiosError<ApiErrorResponse>,
+    UpdateAiToolConfigurationVariables
+  >({
+    mutationFn: ({ businessId, configurationId, payload }) =>
+      updateAiToolConfiguration(businessId, configurationId, payload),
+
+    onError: (error, variables, context) => {
+      effect?.failureFn?.(error, variables, context);
+    },
+
+    onSuccess: async (data, variables, context) => {
+      await queryClient.invalidateQueries({
+        queryKey: aiConfigurationQueryKeys.aiTools(variables.businessId),
+      });
+
+      effect?.successFn?.(data, variables, context);
+    },
+  });
+};
+
+
+
+export interface DeleteAiToolConfigurationVariables {
+  businessId: string;
+  configurationId: string;
+}
+
+export const useDeleteAiToolConfiguration = (
+  effect?: ApiHookEffect<
+    DeleteResponse,
+    DeleteAiToolConfigurationVariables,
+    AxiosError<ApiErrorResponse>
+  >
+) => {
+  const queryClient = useQueryClient();
+
+  return useMutation<
+    DeleteResponse,
+    AxiosError<ApiErrorResponse>,
+    DeleteAiToolConfigurationVariables
+  >({
+    mutationFn: ({ businessId, configurationId }) =>
+      deleteAiToolConfiguration(businessId, configurationId),
+
+    onError: (error, variables, context) => {
+      effect?.failureFn?.(error, variables, context);
+    },
+
+    onSuccess: async (data, variables, context) => {
+      await queryClient.invalidateQueries({
+        queryKey: aiConfigurationQueryKeys.aiTools(variables.businessId),
+      });
+
+      effect?.successFn?.(data, variables, context);
+    },
+  });
+};
+
+
+export interface DeleteDataClassificationConfigurationVariables {
+  businessId: string;
+  configurationId: string;
+}
+
+export const useDeleteDataClassificationConfiguration = (
+  effect?: ApiHookEffect<
+    DeleteResponse,
+    DeleteDataClassificationConfigurationVariables,
+    AxiosError<ApiErrorResponse>
+  >
+) => {
+  const queryClient = useQueryClient();
+
+  return useMutation<
+    DeleteResponse,
+    AxiosError<ApiErrorResponse>,
+    DeleteDataClassificationConfigurationVariables
+  >({
+    mutationFn: ({ businessId, configurationId }) =>
+      deleteDataClassificationConfiguration(businessId, configurationId),
+
+    onError: (error, variables, context) => {
+      effect?.failureFn?.(error, variables, context);
+    },
+
     onSuccess: async (data, variables, context) => {
       await queryClient.invalidateQueries({
         queryKey: aiConfigurationQueryKeys.dataClassifications(

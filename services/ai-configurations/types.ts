@@ -23,7 +23,15 @@ export interface DataClassificationConfiguration {
   action: string;
   created_at: string;
   updated_at: string;
-}
+  is_custom_config: boolean;
+
+  metadata?: { 
+    domains: Array<string>;
+    rules: Array<string>;
+    // [key: string]: any; 
+  }
+
+  }
 
 /* =========================
    REQUEST TYPES
@@ -48,6 +56,10 @@ export interface CreateDataClassificationConfigurationRequest {
   }
 }
 
+
+
+
+
 /* =========================
    RESPONSE TYPES
 ========================= */
@@ -63,3 +75,42 @@ export interface CreateDataClassificationConfigurationResponse
 
 export type GetDataClassificationConfigurationsResponse =
   PaginatedResponse<DataClassificationConfiguration>;
+
+
+
+export interface DataClassificationMetadata {
+  domains?: string[];
+  rules?: string[];
+  [key: string]: any;
+}
+
+export interface UpdateDataClassificationConfigurationRequest {
+  data_type: string;
+  action: string;
+  priority: number;
+  is_enabled: boolean;
+  is_custom_config: boolean;
+  metadata: DataClassificationMetadata;
+}
+
+export interface UpdateDataClassificationConfigurationResponse
+  extends ApiSuccessResponse<DataClassificationConfiguration[]> {}
+
+
+
+
+export interface UpdateAiToolConfigurationRequest {
+  tool_name: string;
+  domain: string;
+  is_allowed: boolean;
+}
+
+export interface UpdateAiToolConfigurationResponse
+  extends ApiSuccessResponse<AiToolConfiguration[]> {}
+
+
+
+export interface DeleteResponse {
+  status: string;
+  message: string;
+}
