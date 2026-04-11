@@ -122,7 +122,7 @@ const UserUpsertForm = ({
               <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
                 Country
               </label>
-              <input
+              {/* <input
                 type="text"
                 required
                 className="block w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg focus:ring-brand-500 focus:border-brand-500 dark:bg-slate-700 dark:text-white sm:text-sm"
@@ -131,7 +131,19 @@ const UserUpsertForm = ({
                 onChange={(e) =>
                   setFormData({ ...formData, country: e.target.value })
                 }
-              />
+              /> */}
+               <select
+                    className="block w-full pl-11 pr-4 py-3.5 bg-slate-50 dark:bg-slate-900 border-none rounded-2xl text-slate-900 dark:text-white placeholder-slate-400 focus:ring-2 focus:ring-brand-500 transition-all"
+                    id="country"
+                    value={formData.country}
+                    onChange={(e) =>
+                      setFormData({ ...formData, country: e.target.value })
+                    }
+                  >
+                    <option value="USA">United States Of America</option>
+                    <option value="UK">United Kingdom</option>
+                    <option value="NGA">Nigeria</option>
+                  </select>
             </div>
 
             <div>
