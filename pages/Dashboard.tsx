@@ -7,11 +7,29 @@ import { useStore } from '../context/Store';
 import { ArrowUpRight, ArrowDownRight, MoreHorizontal, Filter, Download, Calendar, Activity, Lock, AlertTriangle, Loader2 } from 'lucide-react';
 import { RiskLevel } from '../types';
 import { useGetBusinesses } from '@/services/business/hooks';
+import { useGetHighRiskCount, useGetTotalPrompts, useGetTrends } from '@/services/metric/hooks';
 
 export const Dashboard: React.FC = () => {
   const { state, dispatch } = useStore();
 
+  console.log("Dashboard <!---->")
+
   const business = useGetBusinesses()
+
+  const _business = business.data?.data[0]
+
+  const timeTrend = useGetTrends(
+      _business?.id ?? ""
+  )
+
+  const totalPrompt = useGetTotalPrompts(
+   _business?.id ?? ""
+  )
+
+  const riskyPrompt = useGetHighRiskCount(
+   _business?.id ?? ""
+  )
+
 //   const user = us
   React.useEffect(() => {
    const _business = business.data?.data[0]
@@ -35,25 +53,34 @@ export const Dashboard: React.FC = () => {
   
   // Calculate Metrics on the fly based on events state
   const metrics = useMemo(() => {
-    const total = state.events.length;
-    const highRisk = state.events.filter(e => e.riskLevel === RiskLevel.HIGH || e.riskLevel === RiskLevel.CRITICAL).length;
-    const sensitive = state.events.filter(e => e.detectedDataTypes.length > 0 && !e.detectedDataTypes.includes('None')).length;
+   //  const total = state.events.length;
+   //  const highRisk = state.events.filter(e => e.riskLevel === RiskLevel.HIGH || e.riskLevel === RiskLevel.CRITICAL).length;
+   //  const sensitive = state.events.filter(e => e.detectedDataTypes.length > 0 && !e.detectedDataTypes.includes('None')).length;
     
     return {
-      total,
-      highRisk,
-      sensitivePct: total > 0 ? ((sensitive / total) * 100).toFixed(1) : 0,
+      total: totalPrompt?.data?.data ?? 0,
+      highRisk: riskyPrompt?.data?.data ?? 0,
+      sensitivePct: riskyPrompt?.data?.data ?? 0, //total > 0 ? ((sensitive / total) * 100).toFixed(1) : 0,
     };
-  }, [state.events]);
+  }, [state.events, totalPrompt?.data , riskyPrompt?.data]);
 
   // Chart Data Preparation
   const trendData = useMemo(() => {
-    return state.events.slice(0, 50).map((e) => ({
-        time: new Date(e.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-        risk: e.riskScore,
-        count: Math.floor(Math.random() * 10) + 1
+   //  return state.events.slice(0, 50).map((e) => ({
+   //      time: new Date(e.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+   //      risk: e.riskScore,
+   //      count: Math.floor(Math.random() * 10) + 1
+   //  })).reverse();
+
+  return ( timeTrend?.data?.data ?? []).slice(0,50).map((e) => ({
+        time: new Date(e.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+        risk: e.risk_score,
+        count: 1,
     })).reverse();
-  }, [state.events]);
+  }, [state.events, timeTrend?.data]);
+
+
+  console.log(trendData,"shhshhs",timeTrend?.data?.data)
 
   const toolData = useMemo(() => {
       const counts: Record<string, number> = {};
@@ -79,7 +106,8 @@ export const Dashboard: React.FC = () => {
       {/* Dashboard Title & Actions */}
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold text-slate-900 dark:text-white">Dashboard</h1>
-        <div className="flex items-center gap-3">
+        {/* Hiding Filters */}
+        {/* <div className="flex items-center gap-3">
              <div className="flex items-center px-4 py-2 bg-white dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700 text-sm font-medium text-slate-600 dark:text-slate-300 shadow-sm cursor-pointer hover:bg-slate-50 transition-colors">
                 <Calendar className="w-4 h-4 mr-2 text-slate-400" />
                 Oct 18 - Nov 18
@@ -95,7 +123,7 @@ export const Dashboard: React.FC = () => {
                 <Download className="w-4 h-4 mr-2" />
                 Export
              </button>
-        </div>
+        </div> */}
       </div>
 
       {/* KPI Cards Row */}
