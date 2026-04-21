@@ -193,8 +193,8 @@ export const Departments: React.FC = () => {
                   </td>
                   <td className="px-6 py-4">
                     <div className="flex flex-wrap gap-1.5">
-                      {dept.permissions.slice(0, 3).map(p => (
-                        <span key={p} className="px-2 py-0.5 bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 text-[10px] font-medium rounded-md">
+                      {dept.permissions.slice(0, 3).map((p,index) => (
+                        <span key={`${index}__permission_${p.name}`} className="px-2 py-0.5 bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 text-[10px] font-medium rounded-md">
                           {p.name.replace('_', ' ')}
                         </span>
                       ))}

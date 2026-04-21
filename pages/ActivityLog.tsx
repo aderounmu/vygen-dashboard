@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { AppState, useStore } from '../context/Store';
 import { RiskBadge } from '../components/RiskBadge';
 import { ChevronLeft, ChevronRight, Eye, AlertCircle, CheckCircle, XCircle } from 'lucide-react';
-import { AIEvent } from '../types';
+import { ActionType, AIEvent } from '../types';
 import { useGetPromptEvents } from '@/services/prompt/hook';
 import { PromptEvent } from '@/services/prompt/types';
 
@@ -91,7 +91,7 @@ export const ActivityLog: React.FC = () => {
                     {event?.risk_score ?? ""}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <RiskBadge action={event.action} />
+                    <RiskBadge action={event.action as ActionType} />
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500 dark:text-slate-400">
                     {new Date(event.created_at).toLocaleString()}

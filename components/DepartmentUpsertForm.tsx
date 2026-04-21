@@ -18,7 +18,11 @@ const DepartmentUpsertForm = ({
     handleSubmit: () => void
     title: string,
     formData: Partial<Department>,
-    setFormData:  React.Dispatch<React.SetStateAction<Department>>,
+    setFormData:  React.Dispatch<React.SetStateAction<{
+    name: string;
+    description: string;
+    permissions: Array<BusinessPermission>;
+}>>,
     isLoading?: boolean
 }) => {
 
@@ -77,7 +81,7 @@ const DepartmentUpsertForm = ({
                 <div className="flex items-center justify-between">
                   <label className="text-sm font-semibold text-slate-700 dark:text-slate-300">Permissions</label>
                   <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
-                    {formData.permissions.length} Selected
+                    {(formData.permissions ?? []).length} Selected
                   </span>
                 </div>
                 
@@ -85,11 +89,11 @@ const DepartmentUpsertForm = ({
 
                 <Loader2 className="w-5 h-5 animate-spin" /> 
                </div>: <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 max-h-60 overflow-y-scroll">
-                  {permissions?.data.data[0].map((permission) => {
-                    const isSelected = formData.permissions.filter((per) => permission.slug === per.slug).length >= 1;
+                  {permissions?.data.data[0].map((permission, index) => {
+                    const isSelected = (formData.permissions ?? []).filter((per) => permission.slug === per.slug).length >= 1;
                     return (
                       <button
-                        key={permission}
+                        key={`${permission.name}__${index}__permission`}
                         type="button"
                         onClick={() => togglePermission(permission)}
                         className={`flex items-center justify-between p-3 rounded-2xl border transition-all text-left ${

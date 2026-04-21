@@ -9,6 +9,8 @@ import {
   GetTrendsResponse,
   GetTotalPromptsResponse,
   GetHighRiskCountResponse,
+  GetTopToolsResponse,
+  GetTopDataTypesResponse,
 } from "./types";
 
 // =========================
@@ -25,6 +27,13 @@ export const metricQueryKeys = {
 
   highRiskCount: (businessId: string) =>
     [...metricQueryKeys.base, "high-risk-count", businessId] as const,
+
+  // NEW
+  topTools: (businessId: string) =>
+    [...metricQueryKeys.base, "top-tools", businessId] as const,
+
+  topDataTypes: (businessId: string) =>
+    [...metricQueryKeys.base, "top-data-types", businessId] as const,
 };
 
 // =========================
@@ -57,6 +66,30 @@ export const getHighRiskCount = async (
 ): Promise<GetHighRiskCountResponse> => {
   const response = await api.get<GetHighRiskCountResponse>(
     `/business/${businessId}/analytics/high-risk-count`
+  );
+  return response.data;
+};
+
+// =========================
+// Top Tools
+// =========================
+export const getTopTools = async (
+  businessId: string
+): Promise<GetTopToolsResponse> => {
+  const response = await api.get<GetTopToolsResponse>(
+    `/business/${businessId}/analytics/top-tools`
+  );
+  return response.data;
+};
+
+// =========================
+// Top Data Types
+// =========================
+export const getTopDataTypes = async (
+  businessId: string
+): Promise<GetTopDataTypesResponse> => {
+  const response = await api.get<GetTopDataTypesResponse>(
+    `/business/${businessId}/analytics/top-data-types`
   );
   return response.data;
 };
@@ -109,6 +142,38 @@ export const useGetHighRiskCount = (
   return useQuery({
     queryKey: metricQueryKeys.highRiskCount(businessId),
     queryFn: () => getHighRiskCount(businessId),
+    enabled: !!businessId,
+  });
+};
+
+export const useGetTopTools = (
+  businessId: string,
+  effect?: ApiHookEffect<
+    GetTopToolsResponse,
+    unknown,
+    AxiosError<any>
+  >
+) => {
+  return useQuery({
+    queryKey: metricQueryKeys.topTools(businessId),
+    queryFn: () => getTopTools(businessId),
+    enabled: !!businessId,
+  });
+};
+
+
+
+export const useGetTopDataTypes = (
+  businessId: string,
+  effect?: ApiHookEffect<
+    GetTopDataTypesResponse,
+    unknown,
+    AxiosError<any>
+  >
+) => {
+  return useQuery({
+    queryKey: metricQueryKeys.topDataTypes(businessId),
+    queryFn: () => getTopDataTypes(businessId),
     enabled: !!businessId,
   });
 };

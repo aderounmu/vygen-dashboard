@@ -28,3 +28,28 @@ export interface GetTotalPromptsResponse {
 export interface GetHighRiskCountResponse {
   data: number;
 }
+
+// =========================
+// Top Tools
+// =========================
+
+export interface GetTopToolsResponse {
+  data: Record<string, number>; // e.g. { chatgpt: 42 }
+}
+
+// =========================
+// Top Data Types
+// =========================
+
+export interface TopDataTypeItem {
+  action: string;
+  name: string;
+  count: number;
+}
+
+
+
+export interface GetTopDataTypesResponse {
+  data: Record<string,TopDataTypeItem[]>;
+  
+}

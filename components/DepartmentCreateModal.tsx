@@ -4,11 +4,16 @@ import DepartmentUpsertForm from './DepartmentUpsertForm'
 import { AppState, useStore } from '@/context/Store'
 import { useAssignBusinessRolePermissions, useCreateBusinessRole } from '@/services/business/hooks'
 import { toast } from 'sonner'
+import { BusinessPermission } from '@/services/business/types'
 
 const DepartmentCreateModal = (props:{
     handleCloseModal : () => void,
     formData: Partial<Department>,
-    setFormData:  React.Dispatch<React.SetStateAction<Department>>,
+    setFormData:  React.Dispatch<React.SetStateAction<{
+        name: string;
+        description: string;
+        permissions: Array<BusinessPermission>;
+    }>>,
     isLoading?: boolean
 }) => {
 
@@ -37,19 +42,19 @@ const DepartmentCreateModal = (props:{
     const handleSubmit = async () => {
         try{
             const data = await createBusinessRole.mutateAsync({
-                businessId : state.organization.id,
+                businessId : state?.organization?.id ?? "",
                 payload: {
-                    role: props.formData.name
+                    role: props.formData.name ?? ""
                 },
             })
             console.log(data.data[0].id)
             const role_id = data.data[0].id;
             setRoleId(role_id)
             addPermissionToRole.mutate({
-                businessId : state.organization.id,
+                businessId : state?.organization?.id ?? "",
                 roleId: role_id,
                 payload: {
-                    permissions: props.formData.permissions
+                    permissions: props?.formData.permissions ?? []
                 }
             })
             props.handleCloseModal()
