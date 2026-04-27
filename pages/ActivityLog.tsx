@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { AppState, useStore } from '../context/Store';
 import { RiskBadge } from '../components/RiskBadge';
 import { ChevronLeft, ChevronRight, Eye, AlertCircle, CheckCircle, XCircle } from 'lucide-react';
@@ -11,7 +11,7 @@ export const ActivityLog: React.FC = () => {
 //   const [(selectedEvent as PromptEvent), setSelectedEvent] = useState<AIEvent | null>(null);
   const [selectedEvent, setSelectedEvent] = useState<PromptEvent | null>(null);
   const [page, setPage] = useState(1);
-  const itemsPerPage = 10;
+  const itemsPerPage = 20;
 
   const filteredEvents = state.events.filter(e => {
       const match = state.searchQuery.toLowerCase();
@@ -20,10 +20,19 @@ export const ActivityLog: React.FC = () => {
              e.promptSnippet.toLowerCase().includes(match);
   });
 
-  const totalPages = Math.ceil(filteredEvents.length / itemsPerPage);
+//   const totalPages = Math.ceil(filteredEvents.length / itemsPerPage);
 //   const currentData = filteredEvents.slice((page - 1) * itemsPerPage, page * itemsPerPage);
 
-  const currentData = useGetPromptEvents(state?.organization?.id ?? "")
+  const currentData = useGetPromptEvents(
+    state?.organization?.id ?? "",
+    itemsPerPage,
+    page
+  )
+
+
+
+  const totalPages =  useMemo(() => currentData?.data?.total_pages ?? 0, [currentData?.data?.total_pages])
+  const totalItems = useMemo(() => currentData?.data?.total_items ?? 0, [currentData?.data?.total_items])
 
   return (
     <div className="space-y-6">
@@ -113,9 +122,9 @@ export const ActivityLog: React.FC = () => {
         {/* Pagination */}
         <div className="bg-white dark:bg-slate-800 px-4 py-3 border-t border-slate-200 dark:border-slate-700 flex items-center justify-between sm:px-6">
             <div className="flex-1 flex justify-between items-center">
-                <p className="text-sm text-slate-700 dark:text-slate-300">
-                    Showing <span className="font-medium">{(page - 1) * itemsPerPage + 1}</span> to <span className="font-medium">{Math.min(page * itemsPerPage, filteredEvents.length)}</span> of <span className="font-medium">{filteredEvents.length}</span> results
-                </p>
+                {!currentData.isLoading && <p className="text-sm text-slate-700 dark:text-slate-300">
+                    Showing <span className="font-medium">{(page - 1) * itemsPerPage + 1}</span> to <span className="font-medium">{Math.min(page * itemsPerPage, totalItems)}</span> of <span className="font-medium">{totalItems}</span> results
+                </p>}
                 <div className="flex gap-2">
                     <button 
                         onClick={() => setPage(Math.max(1, page - 1))}

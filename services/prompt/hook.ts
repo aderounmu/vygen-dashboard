@@ -19,6 +19,8 @@ import {
 
 export const promptQueryKeys = {
   all: ["prompt"] as const,
+  eventsPaginated: (businessId: string, pageSize: number, page: number) =>
+    [...promptQueryKeys.all, "events", businessId, page, pageSize] as const,
   events: (businessId: string) =>
     [...promptQueryKeys.all, "events", businessId] as const,
 };
@@ -28,10 +30,12 @@ export const promptQueryKeys = {
 ========================= */
 
 export const getPromptEvents = async (
-  businessId: string
+  businessId: string,
+  pageSize: number,
+  page: number,
 ): Promise<GetPromptEventsResponse> => {
   const response = await api.get<GetPromptEventsResponse>(
-    `/business/${businessId}/prompt-events`
+    `/business/${businessId}/prompt-events?pageSize=${pageSize}&page=${page}`,
   );
 
   return response.data;
@@ -39,11 +43,11 @@ export const getPromptEvents = async (
 
 export const submitPrompt = async (
   businessId: string,
-  payload: SubmitPromptRequest
+  payload: SubmitPromptRequest,
 ): Promise<SubmitPromptResponse> => {
   const response = await api.post<SubmitPromptResponse>(
     `/business/${businessId}/submit-prompt`,
-    payload
+    payload,
   );
 
   return response.data;
@@ -55,14 +59,16 @@ export const submitPrompt = async (
 
 export const useGetPromptEvents = (
   businessId: string,
+  pageSize: number,
+  page: number,
   options?: Omit<
     UseQueryOptions<GetPromptEventsResponse, AxiosError<ApiErrorResponse>>,
     "queryKey" | "queryFn"
-  >
+  >,
 ) => {
   return useQuery<GetPromptEventsResponse, AxiosError<ApiErrorResponse>>({
-    queryKey: promptQueryKeys.events(businessId),
-    queryFn: () => getPromptEvents(businessId),
+    queryKey: promptQueryKeys.eventsPaginated(businessId, pageSize, page),
+    queryFn: () => getPromptEvents(businessId, pageSize, page),
     enabled: !!businessId,
     ...options,
   });
@@ -82,7 +88,7 @@ export const useSubmitPrompt = (
     SubmitPromptResponse,
     SubmitPromptVariables,
     AxiosError<ApiErrorResponse>
-  >
+  >,
 ) => {
   const queryClient = useQueryClient();
 
