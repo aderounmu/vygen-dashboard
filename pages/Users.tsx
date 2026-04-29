@@ -12,8 +12,10 @@ export const Users: React.FC = () => {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [editingUser, setEditingUser] = useState<User | null>(null);
 
+
     const { data, isLoading } = useGetBusinessMembers(state?.organization?.id ?? "");
 
+    console.log(isLoading, "isLoading<!----!>")
     // Form State
     const [formData, setFormData] = useState<Partial<User>>({
         firstName: '',
@@ -151,7 +153,7 @@ export const Users: React.FC = () => {
 
             {/* Users Table */}
             <div className="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 overflow-hidden shadow-sm">
-              { isLoading ? <>
+              { !isLoading ? <>
                     <div className="overflow-x-auto">
                         <table className="w-full text-left border-collapse">
                             <thead>

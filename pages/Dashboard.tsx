@@ -145,7 +145,7 @@ export const Dashboard: React.FC = () => {
   }, [state.events,topTools?.data]);
 
 
-  const currentData = useGetPromptEvents(state?.organization?.id ?? "")
+  const currentData = useGetPromptEvents(state?.organization?.id ?? "",4,1)
 //   const  = [
 //     { name: 'SSN', value: 60, color: '#6366f1' }, // Indigo
 //     { name: 'NIN', value: 50, color: '#0ea5e9' }, // Sky

@@ -1,6 +1,7 @@
 import React from "react";
 import {
   HashRouter,
+  BrowserRouter,
   Routes,
   Route,
   Navigate,
@@ -18,6 +19,7 @@ import { Login } from "./pages/Login";
 import { Register } from "./pages/Register";
 import { useGetBusinesses } from "./services/business/hooks";
 import { useGetUsers } from "./services/user/hooks";
+import { AcceptInvite } from "./pages/AcceptInvite";
 
 const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({
   children,
@@ -88,6 +90,10 @@ const AppRoutes: React.FC = () => {
     <Routes>
       <Route path="/login" element={<Login />} />
       <Route path="/register" element={<Register />} />
+       <Route
+          path="/api/v1/business/business-invite/:bussinessId/:bussinessReference/:inviteReference"
+          element={<AcceptInvite/>}
+        />
 
       <Route
         path="/"
@@ -103,6 +109,7 @@ const AppRoutes: React.FC = () => {
         <Route path="users" element={<Users />} />
         <Route path="departments" element={<Departments />} />
         <Route path="prompting" element={<Prompting />} />
+       
 
         {/* Fallback routes for demo */}
         <Route
@@ -130,9 +137,9 @@ const AppRoutes: React.FC = () => {
 const App: React.FC = () => {
   return (
     <AppProvider>
-      <HashRouter>
+      <BrowserRouter>
         <AppRoutes />
-      </HashRouter>
+      </BrowserRouter>
     </AppProvider>
   );
 };

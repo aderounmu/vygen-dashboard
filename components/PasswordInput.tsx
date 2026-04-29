@@ -2,12 +2,12 @@ import { Eye, EyeOff } from "lucide-react";
 import React from "react";
 
 const PasswordInput = (props: {
-  setPassword: (value: string) => null;
+  setPassword: (value: string) => void;
   password: string;
 }) => {
   const [showPassword, setShowPassword] = React.useState<Boolean>(false);
   return (
-    <>
+    <div className="relative">
       <input
         type={showPassword ? "text" : "password"}
         required
@@ -27,7 +27,7 @@ const PasswordInput = (props: {
           <Eye className="h-5 w-5" />
         )}
       </button>
-    </>
+    </div>
   );
 };
 

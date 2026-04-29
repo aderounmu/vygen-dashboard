@@ -6,6 +6,7 @@ import { useLogin } from '@/services/auth/hook';
 import { toast } from 'sonner';
 import PasswordInput from '@/components/PasswordInput';
 import { Logo } from "../components/Logo";
+import { Organization } from '@/types';
 
 export const Login: React.FC = () => {
   const [email, setEmail] = useState('');
@@ -49,7 +50,8 @@ export const Login: React.FC = () => {
             organization: {
               id: '',
               name: '',
-              email: ''
+              email: '',
+              reference: ""
             }
           }
           });
@@ -124,7 +126,10 @@ export const Login: React.FC = () => {
         <div className="bg-white dark:bg-slate-800 rounded-[32px] shadow-xl shadow-slate-200/50 dark:shadow-none p-8 border border-slate-100 dark:border-slate-700">
           <h2 className="text-xl font-bold text-slate-900 dark:text-white mb-6">Welcome back</h2>
           
-          <form onSubmit={handleSubmit} className="space-y-5">
+          <form onSubmit={(e) => {
+            e.preventDefault()
+            handleSubmit(e)
+          }}  className="space-y-5">
             <div>
               <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">Email Address</label>
               <div className="relative">

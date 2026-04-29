@@ -51,7 +51,10 @@ const DepartmentUpsertForm = ({
               </button>
             </div>
 
-            <form onSubmit={handleSubmit} className="p-6 space-y-6">
+            <form onSubmit={(e) => {
+            e.preventDefault()
+            handleSubmit()
+          }}  className="p-6 space-y-6">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-2">
                   <label className="text-sm font-semibold text-slate-700 dark:text-slate-300">Department Name</label>

@@ -66,12 +66,12 @@ export const Register: React.FC = () => {
         type: "REGISTER",
         payload: {
           user: {
-            id: savedUserData.id,
-            firstName: savedUserData.first_name,
-            lastName: savedUserData.last_name,
-            name: `${savedUserData.first_name} ${savedUserData.last_name}`,
-            email: savedUserData.email,
-            country: savedUserData.country,
+            id: savedUserData?.id ?? "",
+            firstName: savedUserData?.first_name ?? "",
+            lastName: savedUserData?.last_name ?? "",
+            name: `${savedUserData?.first_name ?? ""} ${savedUserData?.last_name ?? ""}`,
+            email: savedUserData?.email ?? "",
+            country: savedUserData?.country ?? "",
             department: "ADMIN",
             avatar: "https://picsum.photos/seed/admin/32/32",
             status: "Active",
@@ -205,7 +205,13 @@ export const Register: React.FC = () => {
         {/* Card */}
         <div className="bg-white dark:bg-slate-800 rounded-[32px] shadow-xl shadow-slate-200/50 dark:shadow-none p-8 border border-slate-100 dark:border-slate-700">
           {step === 1 ? (
-            <form onSubmit={handleNext} className="space-y-5">
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+                handleNext(e);
+              }}
+              className="space-y-5"
+            >
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">
@@ -312,7 +318,7 @@ export const Register: React.FC = () => {
                     }
                   /> */}
                   <PasswordInput
-                    setPassword={(e) =>
+                    setPassword={(e: string) =>
                       setUserData({ ...userData, password: e })
                     }
                     password={userData.password}
@@ -329,7 +335,13 @@ export const Register: React.FC = () => {
               </button>
             </form>
           ) : (
-            <form onSubmit={handleSubmit} className="space-y-5">
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+                handleSubmit(e);
+              }}
+              className="space-y-5"
+            >
               <div>
                 <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">
                   Organization Name

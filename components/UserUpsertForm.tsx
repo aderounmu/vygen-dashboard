@@ -4,7 +4,7 @@ import React from "react";
 import { Action, AppState, useStore } from "../context/Store";
 import { useGetBusinessRoles } from "@/services/business/hooks";
 
-const UserUpsertForm = ({
+const UserUpsertForm = <T extends Partial<User>>({
   title,
   submitTitle,
   handleSubmit,
@@ -12,14 +12,22 @@ const UserUpsertForm = ({
   formData,
   setFormData,
   isLoading = false,
+  showCancelButton = true,
+  showStatusSection = true,
+  showRoleSection = true,
+  extraInput,
 }: {
   handleCloseModal: () => void;
   submitTitle: string;
   handleSubmit: () => void;
   title: string;
-  formData: Partial<User>;
-  setFormData: (user: Partial<User>) => void;
+  formData: T;
+  setFormData: (user: T) => void;
   isLoading?: boolean;
+  showCancelButton?: boolean;
+  extraInput?: React.ReactNode;
+  showStatusSection?: boolean;
+  showRoleSection?: boolean;
 }) => {
   const {
     state,
@@ -63,7 +71,10 @@ const UserUpsertForm = ({
             </button>
           </div>
 
-          <form onSubmit={handleSubmit} className="p-6 space-y-4">
+          <form onSubmit={(e) => {
+            e.preventDefault()
+            handleSubmit()
+          }} className="p-6 space-y-4">
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
@@ -132,21 +143,21 @@ const UserUpsertForm = ({
                   setFormData({ ...formData, country: e.target.value })
                 }
               /> */}
-               <select
-                    className="block w-full pl-11 pr-4 py-3.5 bg-slate-50 dark:bg-slate-900 border-none rounded-2xl text-slate-900 dark:text-white placeholder-slate-400 focus:ring-2 focus:ring-brand-500 transition-all"
-                    id="country"
-                    value={formData.country}
-                    onChange={(e) =>
-                      setFormData({ ...formData, country: e.target.value })
-                    }
-                  >
-                    <option value="USA">United States Of America</option>
-                    <option value="UK">United Kingdom</option>
-                    <option value="NGA">Nigeria</option>
-                  </select>
+              <select
+                className="block w-full pl-11 pr-4 py-3.5 bg-slate-50 dark:bg-slate-900 border-none rounded-2xl text-slate-900 dark:text-white placeholder-slate-400 focus:ring-2 focus:ring-brand-500 transition-all"
+                id="country"
+                value={formData.country}
+                onChange={(e) =>
+                  setFormData({ ...formData, country: e.target.value })
+                }
+              >
+                <option value="USA">United States Of America</option>
+                <option value="UK">United Kingdom</option>
+                <option value="NGA">Nigeria</option>
+              </select>
             </div>
 
-            <div>
+           {showRoleSection && <div>
               <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
                 Department (Role)
               </label>
@@ -169,56 +180,62 @@ const UserUpsertForm = ({
                 ))}
                 <option value="Unassigned">Unassigned</option>
               </select>
-            </div>
+            </div>}
 
-            <div>
-              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
-                Status
-              </label>
-              <div className="flex gap-4">
-                <label className="inline-flex items-center cursor-pointer">
-                  <input
-                    type="radio"
-                    className="form-radio text-brand-600 focus:ring-brand-500"
-                    name="status"
-                    value="Active"
-                    checked={formData.status === "Active"}
-                    onChange={() =>
-                      setFormData({ ...formData, status: "Active" })
-                    }
-                  />
-                  <span className="ml-2 text-sm text-slate-700 dark:text-slate-300">
-                    Active
-                  </span>
+            {showStatusSection && (
+              <div>
+                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
+                  Status
                 </label>
-                <label className="inline-flex items-center cursor-pointer">
-                  <input
-                    type="radio"
-                    className="form-radio text-brand-600 focus:ring-brand-500"
-                    name="status"
-                    value="Inactive"
-                    checked={formData.status === "Inactive"}
-                    onChange={() =>
-                      setFormData({ ...formData, status: "Inactive" })
-                    }
-                  />
-                  <span className="ml-2 text-sm text-slate-700 dark:text-slate-300">
-                    Inactive
-                  </span>
-                </label>
+                <div className="flex gap-4">
+                  <label className="inline-flex items-center cursor-pointer">
+                    <input
+                      type="radio"
+                      className="form-radio text-brand-600 focus:ring-brand-500"
+                      name="status"
+                      value="Active"
+                      checked={formData.status === "Active"}
+                      onChange={() =>
+                        setFormData({ ...formData, status: "Active" })
+                      }
+                    />
+                    <span className="ml-2 text-sm text-slate-700 dark:text-slate-300">
+                      Active
+                    </span>
+                  </label>
+                  <label className="inline-flex items-center cursor-pointer">
+                    <input
+                      type="radio"
+                      className="form-radio text-brand-600 focus:ring-brand-500"
+                      name="status"
+                      value="Inactive"
+                      checked={formData.status === "Inactive"}
+                      onChange={() =>
+                        setFormData({ ...formData, status: "Inactive" })
+                      }
+                    />
+                    <span className="ml-2 text-sm text-slate-700 dark:text-slate-300">
+                      Inactive
+                    </span>
+                  </label>
+                </div>
               </div>
-            </div>
+            )}
+
+            {extraInput}
 
             <div className="mt-5 sm:mt-6 flex gap-3 pt-4 border-t border-slate-100 dark:border-slate-700">
+              {showCancelButton && (
+                <button
+                  type="button"
+                  className="w-full inline-flex justify-center rounded-lg border border-slate-300 dark:border-slate-600 shadow-sm px-4 py-2 bg-white dark:bg-slate-700 text-base font-medium text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-600 focus:outline-none sm:text-sm transition-colors"
+                  onClick={handleCloseModal}
+                >
+                  Cancel
+                </button>
+              )}
               <button
-                type="button"
-                className="w-full inline-flex justify-center rounded-lg border border-slate-300 dark:border-slate-600 shadow-sm px-4 py-2 bg-white dark:bg-slate-700 text-base font-medium text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-600 focus:outline-none sm:text-sm transition-colors"
-                onClick={handleCloseModal}
-              >
-                Cancel
-              </button>
-              <button
-                disable={isLoading}
+                disabled={isLoading}
                 type="submit"
                 className="w-full inline-flex justify-center rounded-lg border border-transparent shadow-sm px-4 py-2 bg-brand-600 text-base font-medium text-white hover:bg-brand-700 focus:outline-none sm:text-sm transition-colors"
               >

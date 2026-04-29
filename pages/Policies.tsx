@@ -196,7 +196,7 @@ export const Policies: React.FC = () => {
     setDeleteId((prev) => ({ ...prev, [id]: true }));
     dispatch({ type: "DELETE_POLICY", payload: id });
     deleteConfig.mutate({
-      businessId: state?.organization?.id,
+      businessId: state?.organization?.id ?? "",
       configurationId: id,
     });
   };
@@ -228,32 +228,32 @@ export const Policies: React.FC = () => {
     e.preventDefault();
     console.log(newPolicy, "New Policy");
     // return;
-    if (!newPolicy.name || !newPolicy.data_type) return;
+    if (!newPolicy?.name || !newPolicy?.data_type) return;
 
     // const policy: Policy = {
     //   id: `p-${Date.now()}`,
-    //   name: newPolicy.name,
-    //   description: newPolicy.description || "",
-    //   data_type: newPolicy.data_type,
-    //   action: newPolicy.action as ActionType,
-    //   priority: Number(newPolicy.priority) || 1,
-    //   is_enabled: newPolicy.is_enabled ?? true,
+    //   name: newPolicy?.name,
+    //   description: newPolicy?.description || "",
+    //   data_type: newPolicy?.data_type,
+    //   action: newPolicy?.action as ActionType,
+    //   priority: Number(newPolicy?.priority) || 1,
+    //   is_enabled: newPolicy?.is_enabled ?? true,
     // };
 
     // dispatch({ type: "ADD_POLICY", payload: policy });
     const payload = {
-      //name: newPolicy.name,
-      // description: newPolicy.description || "",
-      data_type: newPolicy.data_type,
-      action: newPolicy.action as ActionType,
-      priority: Number(newPolicy.priority) || 1,
-      is_enabled: newPolicy.is_enabled ?? true,
-      is_custom_config: newPolicy.data_type === "custom" ? true : false,
+      //name: newPolicy?.name,
+      // description: newPolicy?.description || "",
+      data_type: newPolicy?.data_type,
+      action: newPolicy?.action as ActionType,
+      priority: Number(newPolicy?.priority) || 1,
+      is_enabled: newPolicy?.is_enabled ?? true,
+      is_custom_config: newPolicy?.data_type === "custom" ? true : false,
     } as any;
 
 
     if (payload.data_type === "email") {
-      const domains = newPolicy.domains
+      const domains = (newPolicy?.domains ?? "")
         .split(",")
         .map((d) => d.trim())
         .filter((d) => d !== "");
@@ -263,20 +263,20 @@ export const Policies: React.FC = () => {
 
     if (payload.data_type === "custom") {
       payload.is_custom_config = true;
-      payload.data_type = newPolicy.name;
+      payload.data_type = newPolicy?.name;
       payload.metadata = {
-        rules: [newPolicy.custom_pattern || ""]
+        rules: [newPolicy?.custom_pattern || ""]
       }
     }
     if (isEditingPolicy) {
       updateConfig.mutate({
-        businessId: state?.organization?.id,
-        configurationId: newPolicy.id ?? "",
+        businessId: state?.organization?.id ?? "",
+        configurationId: newPolicy?.id ?? "",
         payload,
       });
     } else {
       addConfig.mutate({
-        businessId: state?.organization?.id,
+        businessId: state?.organization?.id ?? "",
         payload,
       });
     }
@@ -313,7 +313,7 @@ export const Policies: React.FC = () => {
 
     if (isEditingPlatform) {
       updatePlatform.mutate({
-        businessId: state?.organization?.id,
+        businessId: state?.organization?.id ?? "",
         configurationId: newPlatform.id ?? "",
         payload: {
           tool_name: newPlatform.tool_name,
@@ -323,7 +323,7 @@ export const Policies: React.FC = () => {
       });
     } else {
       addPlatform.mutate({
-        businessId: state?.organization?.id,
+        businessId: state?.organization?.id ?? "",
         payload: {
           tool_name: newPlatform.tool_name,
           domain: newPlatform.domain,
@@ -342,7 +342,7 @@ export const Policies: React.FC = () => {
     setDeleteId((prev) => ({ ...prev, [id]: true }));
     dispatch({ type: "DELETE_PLATFORM", payload: id });
     deletePlatformHook.mutate({
-      businessId: state?.organization?.id,
+      businessId: state?.organization?.id ?? "",
       configurationId: id,
     })
   };
@@ -631,7 +631,9 @@ export const Policies: React.FC = () => {
                 <X className="w-6 h-6" />
               </button>
             </div>
-            <form onSubmit={handleUpsertPlatform} className="p-6 space-y-4">
+            <form onSubmit={(e) => {
+              e.preventDefault()
+              handleUpsertPlatform}} className="p-6 space-y-4">
               <div>
                 <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
                   Platform Name
@@ -734,7 +736,10 @@ export const Policies: React.FC = () => {
                 <X className="w-6 h-6" />
               </button>
             </div>
-            <form onSubmit={handleUpsertPolicy} className="p-6 space-y-4">
+            <form onSubmit={(e) => {
+              e.preventDefault()
+              handleUpsertPolicy(e)
+            }} className="p-6 space-y-4">
               <div>
                 <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
                   Policy Name
@@ -744,7 +749,7 @@ export const Policies: React.FC = () => {
                   required
                   placeholder="e.g. SSN Protection"
                   className="w-full px-4 py-2 rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:ring-2 focus:ring-brand-500 outline-none"
-                  value={newPolicy.name}
+                  value={newPolicy?.name ?? ""}
                   onChange={(e) =>
                     setNewPolicy({ ...newPolicy, name: e.target.value })
                   }
@@ -757,7 +762,7 @@ export const Policies: React.FC = () => {
                 <textarea
                   placeholder="Briefly describe the purpose of this policy"
                   className="w-full px-4 py-2 rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:ring-2 focus:ring-brand-500 outline-none resize-none h-20"
-                  value={newPolicy.description}
+                  value={newPolicy?.description ?? ""}
                   onChange={(e) =>
                     setNewPolicy({ ...newPolicy, description: e.target.value })
                   }
@@ -773,7 +778,7 @@ export const Policies: React.FC = () => {
                     required
                     placeholder="e.g. SSN"
                     className="w-full px-4 py-2 rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:ring-2 focus:ring-brand-500 outline-none"
-                    value={newPolicy.data_type}
+                    value={newPolicy?.data_type}
                     onChange={(e) =>
                       setNewPolicy({ ...newPolicy, data_type: e.target.value })
                     }
@@ -781,7 +786,7 @@ export const Policies: React.FC = () => {
                   <select
                     className="w-full px-4 py-2 rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:ring-2 focus:ring-brand-500 outline-none"
                     id="data_type"
-                    value={newPolicy.data_type}
+                    value={newPolicy?.data_type ?? ""}
                     onChange={(e) =>
                       setNewPolicy({ ...newPolicy, data_type: e.target.value })
                     }
@@ -806,7 +811,7 @@ export const Policies: React.FC = () => {
                     required
                     min="1"
                     className="w-full px-4 py-2 rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:ring-2 focus:ring-brand-500 outline-none"
-                    value={newPolicy.priority}
+                    value={newPolicy?.priority}
                     onChange={(e) =>
                       setNewPolicy({
                         ...newPolicy,
@@ -822,7 +827,7 @@ export const Policies: React.FC = () => {
                 </label>
                 <select
                   className="w-full px-4 py-2 rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:ring-2 focus:ring-brand-500 outline-none"
-                  value={newPolicy.action}
+                  value={newPolicy?.action}
                   onChange={(e) =>
                     setNewPolicy({
                       ...newPolicy,
@@ -835,7 +840,7 @@ export const Policies: React.FC = () => {
                   <option value={ActionType.PASS}>Pass</option>
                 </select>
               </div>
-              {newPolicy.data_type === "email" && (
+              {newPolicy?.data_type === "email" && (
                 <div>
                   <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
                     Domains, comma separated
@@ -844,8 +849,8 @@ export const Policies: React.FC = () => {
                     type="text"
                     placeholder="e.g. txrnxp.com, vykensecurity.com"
                     className="w-full px-4 py-2 rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:ring-2 focus:ring-brand-500 outline-none"
-                    // value={newPolicy.metadata?.domains?.join(", ") || ""}
-                    value={newPolicy.domains}
+                    // value={newPolicy?.metadata?.domains?.join(", ") || ""}
+                    value={newPolicy?.domains}
                     onChange={(e) => {
                       const domains = e.target.value;
                       setNewPolicy({
@@ -856,7 +861,7 @@ export const Policies: React.FC = () => {
                   />
                 </div>
               )}
-              {newPolicy.data_type === "custom" && (
+              {newPolicy?.data_type === "custom" && (
                 <div>
                   <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
                     Add a regex pattern to identify the custom data type in the format of /your_regex_pattern/
@@ -865,7 +870,7 @@ export const Policies: React.FC = () => {
                     type="text"
                     placeholder="e.g. your_regex_pattern"
                     className="w-full px-4 py-2 rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:ring-2 focus:ring-brand-500 outline-none"
-                    // value={newPolicy.metadata?.domains?.join(", ") || ""}
+                    // value={newPolicy?.metadata?.domains?.join(", ") || ""}
                     value={newPolicy?.custom_pattern || ""}
                     onChange={(e) => {
                       const custom_pattern = e.target.value;
@@ -891,12 +896,12 @@ export const Policies: React.FC = () => {
                   onClick={() =>
                     setNewPolicy({
                       ...newPolicy,
-                      is_enabled: !newPolicy.is_enabled,
+                      is_enabled: !newPolicy?.is_enabled,
                     })
                   }
                   className="text-brand-600"
                 >
-                  {newPolicy.is_enabled ? (
+                  {newPolicy?.is_enabled ? (
                     <ToggleRight className="w-8 h-8" />
                   ) : (
                     <ToggleLeft className="w-8 h-8 text-slate-400" />
