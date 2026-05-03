@@ -39,6 +39,7 @@ import { toast } from "sonner";
 import { set } from "@project-serum/anchor/dist/cjs/utils/features";
 import { DataClassificationConfiguration } from "@/services/ai-configurations/types";
 import { useHasPermission } from "@/hooks/usePermission";
+import Pagination from "@/components/Pagination";
 
 export const Policies: React.FC = () => {
   const {
@@ -160,8 +161,42 @@ export const Policies: React.FC = () => {
     });
   };
 
+  const [pagePlatforms, setPagePlatforms] = useState(1);
+  const itemsPerPagePlatforms = 20;
+
+  const [pageConfig, setPageConfig] = useState(1);
+  const itemsPerPageConfig = 20;
+
   // Hooks
-  const platforms = useGetAiToolConfigurations(state?.organization?.id ?? "");
+  const platforms = useGetAiToolConfigurations(
+    state?.organization?.id ?? "",
+    itemsPerPagePlatforms,
+    pagePlatforms,
+  );
+
+  const configs = useGetDataClassificationConfigurations(
+    state?.organization?.id ?? "",
+    itemsPerPageConfig,
+    pageConfig,
+  );
+
+  const totalPagesPlatform = React.useMemo(
+    () => platforms?.data?.total_pages ?? 0,
+    [platforms?.data?.total_pages],
+  );
+  const totalItemsPlatform = React.useMemo(
+    () => platforms?.data?.total_items ?? 0,
+    [platforms?.data?.total_items],
+  );
+
+  const totalPagesConfig = React.useMemo(
+    () => configs?.data?.total_pages ?? 0,
+    [configs?.data?.total_pages],
+  );
+  const totalItemsConfig = React.useMemo(
+    () => configs?.data?.total_items ?? 0,
+    [configs?.data?.total_items],
+  );
 
   const addPlatform = useCreateAiToolConfiguration({
     successFn: () => {
@@ -232,10 +267,6 @@ export const Policies: React.FC = () => {
       toast.error(`Error occured deleting Platform`);
     },
   });
-
-  const configs = useGetDataClassificationConfigurations(
-    state?.organization?.id ?? "",
-  );
 
   const [newPlatform, setNewPlatform] = useState<Partial<AIPlatform>>({
     tool_name: "",
@@ -561,6 +592,15 @@ export const Policies: React.FC = () => {
             )}
           </div>
         )}
+        <Pagination
+          hideStyling={true}
+          isLoading={platforms.isLoading}
+          page={pagePlatforms}
+          itemsPerPage={itemsPerPagePlatforms}
+          totalItems={totalItemsPlatform}
+          setPage={setPagePlatforms}
+          totalPages={totalPagesPlatform}
+        ></Pagination>
       </section>
 
       {/* DLP Policies Section */}
@@ -707,6 +747,15 @@ export const Policies: React.FC = () => {
             )}
           </div>
         )}
+        <Pagination
+          hideStyling={true}
+          isLoading={configs.isLoading}
+          page={pageConfig}
+          itemsPerPage={itemsPerPageConfig}
+          totalItems={totalItemsConfig}
+          setPage={setPageConfig}
+          totalPages={totalPagesConfig}
+        ></Pagination>
       </section>
 
       {/* Add Platform Modal */}

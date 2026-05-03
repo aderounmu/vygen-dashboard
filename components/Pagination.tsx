@@ -7,7 +7,8 @@ page:number,
 itemsPerPage: number,
 totalItems: number,
 totalPages: number,
-setPage: (value: number) => void
+setPage: (value: number) => void,
+hideStyling?: boolean
 }
 const Pagination = ({
     isLoading,
@@ -15,10 +16,13 @@ const Pagination = ({
     itemsPerPage,
     totalItems,
     setPage,
-    totalPages
+    totalPages,
+    hideStyling = false
 }:  Props) => {
   return (
-    <div className="bg-white dark:bg-slate-800 px-4 py-3 border-t border-slate-200 dark:border-slate-700 flex items-center justify-between sm:px-6">
+    <div 
+    className={hideStyling ? "": "bg-white dark:bg-slate-800 px-4 py-3 border-t border-slate-200 dark:border-slate-700 flex items-center justify-between sm:px-6"}
+    >
       <div className="flex-1 flex justify-between items-center">
         {!isLoading && (
           <p className="text-sm text-slate-700 dark:text-slate-300">

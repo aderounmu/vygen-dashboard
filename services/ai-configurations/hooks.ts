@@ -30,9 +30,33 @@ export const aiConfigurationQueryKeys = {
 
   aiTools: (businessId: string) =>
     [...aiConfigurationQueryKeys.all, "ai-tools", businessId] as const,
+  aiToolsPaginated: (businessId: string, pageSize: number, page: number) =>
+    [
+      ...aiConfigurationQueryKeys.all,
+      "ai-tools",
+      businessId,
+      pageSize,
+      page,
+    ] as const,
 
   dataClassifications: (businessId: string) =>
-    [...aiConfigurationQueryKeys.all, "data-classifications", businessId] as const,
+    [
+      ...aiConfigurationQueryKeys.all,
+      "data-classifications",
+      businessId,
+    ] as const,
+  dataClassificationsPaginated: (
+    businessId: string,
+    pageSize: number,
+    page: number,
+  ) =>
+    [
+      ...aiConfigurationQueryKeys.all,
+      "data-classifications",
+      businessId,
+      pageSize,
+      page,
+    ] as const,
 };
 
 /* =========================
@@ -41,21 +65,23 @@ export const aiConfigurationQueryKeys = {
 
 export const createAiToolConfiguration = async (
   businessId: string,
-  payload: CreateAiToolConfigurationRequest
+  payload: CreateAiToolConfigurationRequest,
 ): Promise<CreateAiToolConfigurationResponse> => {
   const response = await api.post<CreateAiToolConfigurationResponse>(
     `/business/${businessId}/dlp/config/ai-tools`,
-    payload
+    payload,
   );
 
   return response.data;
 };
 
 export const getAiToolConfigurations = async (
-  businessId: string
+  businessId: string,
+  pageSize: number,
+  page: number,
 ): Promise<GetAiToolConfigurationsResponse> => {
   const response = await api.get<GetAiToolConfigurationsResponse>(
-    `/business/${businessId}/dlp/config/ai-tools`
+    `/business/${businessId}/dlp/config/ai-tools?pageSize=${pageSize}&page=${page}`,
   );
 
   return response.data;
@@ -63,61 +89,60 @@ export const getAiToolConfigurations = async (
 
 export const createDataClassificationConfiguration = async (
   businessId: string,
-  payload: CreateDataClassificationConfigurationRequest
+  payload: CreateDataClassificationConfigurationRequest,
 ): Promise<CreateDataClassificationConfigurationResponse> => {
-  const response = await api.post<CreateDataClassificationConfigurationResponse>(
-    `/business/${businessId}/dlp/config/data-classifications`,
-    payload
-  );
+  const response =
+    await api.post<CreateDataClassificationConfigurationResponse>(
+      `/business/${businessId}/dlp/config/data-classifications`,
+      payload,
+    );
 
   return response.data;
 };
 
-
 export const updateDataClassificationConfiguration = async (
   businessId: string,
   configurationId: string,
-  payload: UpdateDataClassificationConfigurationRequest
+  payload: UpdateDataClassificationConfigurationRequest,
 ): Promise<UpdateDataClassificationConfigurationResponse> => {
   const response =
     await api.patch<UpdateDataClassificationConfigurationResponse>(
       `/business/${businessId}/dlp/config/data-classifications/${configurationId}`,
-      payload
+      payload,
     );
 
   return response.data;
 };
 
 export const getDataClassificationConfigurations = async (
-  businessId: string
+  businessId: string,
+  pageSize: number,
+  page: number,
 ): Promise<GetDataClassificationConfigurationsResponse> => {
   const response = await api.get<GetDataClassificationConfigurationsResponse>(
-    `/business/${businessId}/dlp/config/data-classifications`
+    `/business/${businessId}/dlp/config/data-classifications?pageSize=${pageSize}&page=${page}`,
   );
 
   return response.data;
 };
-
 
 export const deleteAiToolConfiguration = async (
   businessId: string,
-  configurationId: string
+  configurationId: string,
 ): Promise<DeleteResponse> => {
   const response = await api.delete<DeleteResponse>(
-    `/business/${businessId}/dlp/config/ai-tools/${configurationId}`
+    `/business/${businessId}/dlp/config/ai-tools/${configurationId}`,
   );
 
   return response.data;
 };
 
-
-
 export const deleteDataClassificationConfiguration = async (
   businessId: string,
-  configurationId: string
+  configurationId: string,
 ): Promise<DeleteResponse> => {
   const response = await api.delete<DeleteResponse>(
-    `/business/${businessId}/dlp/config/data-classifications/${configurationId}`
+    `/business/${businessId}/dlp/config/data-classifications/${configurationId}`,
   );
 
   return response.data;
@@ -129,14 +154,26 @@ export const deleteDataClassificationConfiguration = async (
 
 export const useGetAiToolConfigurations = (
   businessId: string,
+  pageSize: number,
+  page: number,
   options?: Omit<
-    UseQueryOptions<GetAiToolConfigurationsResponse, AxiosError<ApiErrorResponse>>,
+    UseQueryOptions<
+      GetAiToolConfigurationsResponse,
+      AxiosError<ApiErrorResponse>
+    >,
     "queryKey" | "queryFn"
-  >
+  >,
 ) => {
-  return useQuery<GetAiToolConfigurationsResponse, AxiosError<ApiErrorResponse>>({
-    queryKey: aiConfigurationQueryKeys.aiTools(businessId),
-    queryFn: () => getAiToolConfigurations(businessId),
+  return useQuery<
+    GetAiToolConfigurationsResponse,
+    AxiosError<ApiErrorResponse>
+  >({
+    queryKey: aiConfigurationQueryKeys.aiToolsPaginated(
+      businessId,
+      pageSize,
+      page,
+    ),
+    queryFn: () => getAiToolConfigurations(businessId, pageSize, page),
     enabled: !!businessId,
     ...options,
   });
@@ -144,36 +181,41 @@ export const useGetAiToolConfigurations = (
 
 export const useGetDataClassificationConfigurations = (
   businessId: string,
+  pageSize: number,
+  page: number,
   options?: Omit<
     UseQueryOptions<
       GetDataClassificationConfigurationsResponse,
       AxiosError<ApiErrorResponse>
     >,
     "queryKey" | "queryFn"
-  >
+  >,
 ) => {
   return useQuery<
     GetDataClassificationConfigurationsResponse,
     AxiosError<ApiErrorResponse>
   >({
-    queryKey: aiConfigurationQueryKeys.dataClassifications(businessId),
-    queryFn: () => getDataClassificationConfigurations(businessId),
+    queryKey: aiConfigurationQueryKeys.dataClassificationsPaginated(
+      businessId,
+      pageSize,
+      page,
+    ),
+    queryFn: () =>
+      getDataClassificationConfigurations(businessId, pageSize, page),
     enabled: !!businessId,
     ...options,
   });
 };
 
-
 export const updateAiToolConfiguration = async (
   businessId: string,
   configurationId: string,
-  payload: UpdateAiToolConfigurationRequest
+  payload: UpdateAiToolConfigurationRequest,
 ): Promise<UpdateAiToolConfigurationResponse> => {
-  const response =
-    await api.patch<UpdateAiToolConfigurationResponse>(
-      `/business/${businessId}/dlp/config/ai-tools/${configurationId}`,
-      payload
-    );
+  const response = await api.patch<UpdateAiToolConfigurationResponse>(
+    `/business/${businessId}/dlp/config/ai-tools/${configurationId}`,
+    payload,
+  );
 
   return response.data;
 };
@@ -193,7 +235,6 @@ export interface UpdateDataClassificationConfigurationVariables {
   payload: UpdateDataClassificationConfigurationRequest;
 }
 
-
 export interface UpdateDataClassificationConfigurationVariables {
   businessId: string;
   configurationId: string;
@@ -205,7 +246,7 @@ export const useUpdateDataClassificationConfiguration = (
     UpdateDataClassificationConfigurationResponse,
     UpdateDataClassificationConfigurationVariables,
     AxiosError<ApiErrorResponse>
-  >
+  >,
 ) => {
   const queryClient = useQueryClient();
 
@@ -218,7 +259,7 @@ export const useUpdateDataClassificationConfiguration = (
       updateDataClassificationConfiguration(
         businessId,
         configurationId,
-        payload
+        payload,
       ),
     onError: (error, variables, context) => {
       effect?.failureFn?.(error, variables, context);
@@ -226,7 +267,7 @@ export const useUpdateDataClassificationConfiguration = (
     onSuccess: async (data, variables, context) => {
       await queryClient.invalidateQueries({
         queryKey: aiConfigurationQueryKeys.dataClassifications(
-          variables.businessId
+          variables.businessId,
         ),
       });
 
@@ -240,7 +281,7 @@ export const useCreateAiToolConfiguration = (
     CreateAiToolConfigurationResponse,
     CreateAiToolConfigurationVariables,
     AxiosError<ApiErrorResponse>
-  >
+  >,
 ) => {
   const queryClient = useQueryClient();
 
@@ -274,7 +315,7 @@ export const useCreateDataClassificationConfiguration = (
     CreateDataClassificationConfigurationResponse,
     CreateDataClassificationConfigurationVariables,
     AxiosError<ApiErrorResponse>
-  >
+  >,
 ) => {
   const queryClient = useQueryClient();
 
@@ -291,7 +332,7 @@ export const useCreateDataClassificationConfiguration = (
     onSuccess: async (data, variables, context) => {
       await queryClient.invalidateQueries({
         queryKey: aiConfigurationQueryKeys.dataClassifications(
-          variables.businessId
+          variables.businessId,
         ),
       });
 
@@ -299,8 +340,6 @@ export const useCreateDataClassificationConfiguration = (
     },
   });
 };
-
-
 
 export interface UpdateAiToolConfigurationVariables {
   businessId: string;
@@ -313,7 +352,7 @@ export const useUpdateAiToolConfiguration = (
     UpdateAiToolConfigurationResponse,
     UpdateAiToolConfigurationVariables,
     AxiosError<ApiErrorResponse>
-  >
+  >,
 ) => {
   const queryClient = useQueryClient();
 
@@ -339,8 +378,6 @@ export const useUpdateAiToolConfiguration = (
   });
 };
 
-
-
 export interface DeleteAiToolConfigurationVariables {
   businessId: string;
   configurationId: string;
@@ -351,7 +388,7 @@ export const useDeleteAiToolConfiguration = (
     DeleteResponse,
     DeleteAiToolConfigurationVariables,
     AxiosError<ApiErrorResponse>
-  >
+  >,
 ) => {
   const queryClient = useQueryClient();
 
@@ -377,7 +414,6 @@ export const useDeleteAiToolConfiguration = (
   });
 };
 
-
 export interface DeleteDataClassificationConfigurationVariables {
   businessId: string;
   configurationId: string;
@@ -388,7 +424,7 @@ export const useDeleteDataClassificationConfiguration = (
     DeleteResponse,
     DeleteDataClassificationConfigurationVariables,
     AxiosError<ApiErrorResponse>
-  >
+  >,
 ) => {
   const queryClient = useQueryClient();
 
@@ -407,7 +443,7 @@ export const useDeleteDataClassificationConfiguration = (
     onSuccess: async (data, variables, context) => {
       await queryClient.invalidateQueries({
         queryKey: aiConfigurationQueryKeys.dataClassifications(
-          variables.businessId
+          variables.businessId,
         ),
       });
 
