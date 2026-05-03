@@ -22,42 +22,83 @@ import {
   ChevronDown,
   LogOut,
   Terminal,
+  Loader2,
 } from "lucide-react";
-import { useStore } from "../context/Store";
+import { Action, AppState, useStore } from "../context/Store";
 import { clearAuthStorage } from "@/services/auth/storage";
+import { useGetBusinessMember } from "@/services/business/hooks";
+import { useHasPermission } from "@/hooks/usePermission";
 
 export const Layout: React.FC = () => {
-  const { state, dispatch } = useStore();
+  const {
+    state,
+    dispatch,
+  }: { state: AppState; dispatch: React.Dispatch<Action> } = useStore();
   const location = useLocation();
+
+  const bussiness_member = useGetBusinessMember(state?.organization?.id ?? "");
+  const canSeeUsers = useHasPermission([
+    "can-invite-business-member",
+    "can-view-business-members",
+    "can-assign-role-to-business-member",
+  ], state?.organization?.id ?? "");
+
+  const canSeePrompts = useHasPermission([
+    "can-view-prompt-events",
+  ], state?.organization?.id ?? "");
+
+   const canSeeRoles = useHasPermission([
+    "can-view-business-roles",
+    "can-view-business-member-roles",
+    "can-assign-business-member-role",
+    "can-unassign-permission-from-role",
+    "can-assign-permission-to-role",
+    "can-create-business-roles",
+  ], state?.organization?.id ?? "");
+
+  const canSeePolicy = useHasPermission([
+    "can-create-dlp-ai-tool-config",
+    "can-view-dlp-ai-tool-config",
+    "can-create-dlp-data-classification",
+    "can-view-dlp-data-classifications",
+  ], state?.organization?.id ?? "");
 
   const menuGroups = [
     {
       title: "GENERAL",
       items: [
-        { name: "Dashboard", path: "/", icon: LayoutDashboard },
-        { name: "Activity Log", path: "/activity", icon: Activity },
-        { name: "Policies", path: "/policies", icon: ShieldAlert },
-        { name: "Prompting", path: "/prompting", icon: Terminal, badge: "NEW" },
-        { name: "Users", path: "/users", icon: Users, badge: "8" },
-        { name: "Departments", path: "/departments", icon: Building2 },
+        { name: "Dashboard", path: "/", icon: LayoutDashboard  ,show: true},
+        { name: "Activity Log", path: "/activity", icon: Activity  ,show: canSeePrompts},
+        { name: "Policies", path: "/policies", icon: ShieldAlert  ,show: canSeePolicy},
+        { name: "Prompting", path: "/prompting", icon: Terminal, badge: "NEW"  ,show: true},
+        { name: "Users", path: "/users", icon: Users, badge: "8"  ,show: canSeeUsers},
+        { name: "Departments", path: "/departments", icon: Building2  ,show: canSeeRoles},
       ],
     },
     {
       title: "TOOLS",
       items: [
-        { name: "Reports", path: "/reports", icon: FileText },
-        { name: "Settings", path: "/settings", icon: Settings },
-        { name: "Automation", path: "/automation", icon: Zap, badge: "BETA" },
+        { name: "Reports", path: "/reports", icon: FileText, show: true },
+        { name: "Settings", path: "/settings", icon: Settings, show: true },
+        { name: "Automation", path: "/automation", icon: Zap, badge: "BETA", show: true },
       ],
     },
     {
       title: "SUPPORT",
       items: [
-        { name: "Security", path: "/security", icon: Shield },
-        { name: "Help", path: "/help", icon: HelpCircle },
+        { name: "Security", path: "/security", icon: Shield, show: true},
+        { name: "Help", path: "/help", icon: HelpCircle, show: true},
       ],
     },
   ];
+
+  if (bussiness_member.isLoading) {
+    return (
+      <div className="flex justify-center item-center w-full h-full px-3 py-5">
+        <Loader2 className="w-5 h-5 animate-spin" />
+      </div>
+    );
+  }
 
   return (
     <div className="flex h-screen bg-[#F8F9FA] dark:bg-slate-900 text-slate-900 dark:text-slate-100 overflow-hidden font-sans">
@@ -77,7 +118,7 @@ export const Layout: React.FC = () => {
         </div>
 
         <nav className="flex-1 px-4 py-4 space-y-6 overflow-y-auto">
-          {menuGroups.map((group, groupIdx) => (
+          {menuGroups.map((group, groupIdx) =>  (
             <div key={groupIdx}>
               <h3 className="px-3 text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">
                 {group.title}
@@ -85,6 +126,9 @@ export const Layout: React.FC = () => {
               <div className="space-y-1">
                 {group.items.map((item) => {
                   const isActive = location.pathname === item.path;
+                  if(!item.show){
+                    return 
+                  }
                   return (
                     <NavLink
                       key={item.name}

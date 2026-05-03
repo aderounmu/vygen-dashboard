@@ -1,5 +1,5 @@
 /**
- * 
+ *
  * NOTE !!! Requires refactor and cleanup. This is a rushed implementation to get the feature out. Will be cleaned up in the next iteration.
  * NEED Extension decoupling of components and services. The current implementation is tightly coupled and needs to be refactored to be more modular and maintainable.
  */
@@ -38,6 +38,7 @@ import { AppDispatch } from "recharts/types/state/store";
 import { toast } from "sonner";
 import { set } from "@project-serum/anchor/dist/cjs/utils/features";
 import { DataClassificationConfiguration } from "@/services/ai-configurations/types";
+import { useHasPermission } from "@/hooks/usePermission";
 
 export const Policies: React.FC = () => {
   const {
@@ -57,31 +58,98 @@ export const Policies: React.FC = () => {
     is_enabled: true,
     domains: "",
     custom_pattern: "",
-  }
+  };
 
   const defaultPlatformValues: Partial<AIPlatform> = {
     tool_name: "",
     domain: "",
     is_allowed: true,
-  }
+  };
 
+  const canSeePolicy = useHasPermission(
+    ["can-view-dlp-data-classifications"],
+    state?.organization?.id ?? "",
+  );
 
-  const ListOfAvailablePolicies: { key: string; name: string; description: string }[] = [
+  const canCreatePolicy = useHasPermission(
+    ["can-create-dlp-data-classification"],
+    state?.organization?.id ?? "",
+  );
+  const canSeePlatform = useHasPermission(
+    ["can-view-dlp-ai-tool-config"],
+    state?.organization?.id ?? "",
+  );
+
+  const canCreatePlatform = useHasPermission(
+    ["can-create-dlp-ai-tool-config"],
+    state?.organization?.id ?? "",
+  );
+
+  const ListOfAvailablePolicies: {
+    key: string;
+    name: string;
+    description: string;
+  }[] = [
     { key: "", name: "select policy", description: "Please select a policy" },
-    { key: "ssn", name: "SSN Protection", description: "Protect Social Security Numbers from being shared with AI platforms." },
-    { key: "email", name: "Email Protection", description: "Prevent email addresses from being exposed to AI platforms." },
-    { key: "nin", name: "NIN Protection", description: "Safeguard National Identification Numbers from AI access." },
-    { key: "custom", name: "Custom Pattern", description: "Define a custom regex pattern to protect specific data types." },
-    { key: "source_code", name: "Source Code Protection", description: "Block source code snippets from being shared with AI platforms." },
-    { key: "jwt", name: "JWT Protection", description: "Prevent JSON Web Tokens (JWT) from being exposed to AI platforms." },
-    { key: "aws_keys", name: "AWS Keys Protection", description: "Safeguard AWS Access Keys and Secret Keys from AI access." },
-    { key: "pci", name: "PCI Data Protection", description: "Block Payment Card Industry (PCI) data from AI platforms." },
-    { key: "api_secrets", name: "API Secret Protection", description: "Prevent API secrets and tokens from being shared with AI platforms." },
+    {
+      key: "ssn",
+      name: "SSN Protection",
+      description:
+        "Protect Social Security Numbers from being shared with AI platforms.",
+    },
+    {
+      key: "email",
+      name: "Email Protection",
+      description:
+        "Prevent email addresses from being exposed to AI platforms.",
+    },
+    {
+      key: "nin",
+      name: "NIN Protection",
+      description: "Safeguard National Identification Numbers from AI access.",
+    },
+    {
+      key: "custom",
+      name: "Custom Pattern",
+      description:
+        "Define a custom regex pattern to protect specific data types.",
+    },
+    {
+      key: "source_code",
+      name: "Source Code Protection",
+      description:
+        "Block source code snippets from being shared with AI platforms.",
+    },
+    {
+      key: "jwt",
+      name: "JWT Protection",
+      description:
+        "Prevent JSON Web Tokens (JWT) from being exposed to AI platforms.",
+    },
+    {
+      key: "aws_keys",
+      name: "AWS Keys Protection",
+      description: "Safeguard AWS Access Keys and Secret Keys from AI access.",
+    },
+    {
+      key: "pci",
+      name: "PCI Data Protection",
+      description: "Block Payment Card Industry (PCI) data from AI platforms.",
+    },
+    {
+      key: "api_secrets",
+      name: "API Secret Protection",
+      description:
+        "Prevent API secrets and tokens from being shared with AI platforms.",
+    },
   ];
 
-   //states to ensure right spinner for delete action , will change when refactored to decouple components and services
+  //states to ensure right spinner for delete action , will change when refactored to decouple components and services
   // since id's are uuids, we can use the id to track which policy or platform is being deleted and show the spinner accordingly
-  const [listOfDeletId , setDeleteId] = useState<Record<string, boolean>| null>();
+  const [listOfDeletId, setDeleteId] = useState<Record<
+    string,
+    boolean
+  > | null>();
 
   const removeItemFromDeleteId = (id: string) => {
     setDeleteId((prev) => {
@@ -90,10 +158,9 @@ export const Policies: React.FC = () => {
       delete newState[id];
       return newState;
     });
-  }
+  };
 
-
-  // Hooks 
+  // Hooks
   const platforms = useGetAiToolConfigurations(state?.organization?.id ?? "");
 
   const addPlatform = useCreateAiToolConfiguration({
@@ -121,7 +188,7 @@ export const Policies: React.FC = () => {
   });
 
   const deletePlatformHook = useDeleteAiToolConfiguration({
-    successFn: (_ , variables) => {
+    successFn: (_, variables) => {
       removeItemFromDeleteId(variables.configurationId);
       toast.success(`Platform Deleted successfullly`);
     },
@@ -155,7 +222,6 @@ export const Policies: React.FC = () => {
     },
   });
 
-
   const deleteConfig = useDeleteDataClassificationConfiguration({
     successFn: (_, variables) => {
       removeItemFromDeleteId(variables.configurationId);
@@ -165,16 +231,11 @@ export const Policies: React.FC = () => {
       removeItemFromDeleteId(variables.configurationId);
       toast.error(`Error occured deleting Platform`);
     },
-
   });
 
   const configs = useGetDataClassificationConfigurations(
     state?.organization?.id ?? "",
   );
-
-
-
-
 
   const [newPlatform, setNewPlatform] = useState<Partial<AIPlatform>>({
     tool_name: "",
@@ -184,7 +245,6 @@ export const Policies: React.FC = () => {
 
   const [newPolicy, setNewPolicy] = useState<Partial<Policy>>();
 
- 
   const togglePolicy = (policy: Policy) => {
     dispatch({
       type: "UPDATE_POLICY",
@@ -201,7 +261,9 @@ export const Policies: React.FC = () => {
     });
   };
 
-  const convertPolicyResponseToPolicy = (config: DataClassificationConfiguration): Policy => {
+  const convertPolicyResponseToPolicy = (
+    config: DataClassificationConfiguration,
+  ): Policy => {
     const item: Policy = {
       id: config.id,
       name: config.data_type,
@@ -218,7 +280,9 @@ export const Policies: React.FC = () => {
 
     if (config.is_custom_config) {
       item.name = config.data_type;
-      item.custom_pattern = config.metadata?.rules ? config.metadata.rules[0] : "";
+      item.custom_pattern = config.metadata?.rules
+        ? config.metadata.rules[0]
+        : "";
     }
 
     return item;
@@ -251,7 +315,6 @@ export const Policies: React.FC = () => {
       is_custom_config: newPolicy?.data_type === "custom" ? true : false,
     } as any;
 
-
     if (payload.data_type === "email") {
       const domains = (newPolicy?.domains ?? "")
         .split(",")
@@ -265,8 +328,8 @@ export const Policies: React.FC = () => {
       payload.is_custom_config = true;
       payload.data_type = newPolicy?.name;
       payload.metadata = {
-        rules: [newPolicy?.custom_pattern || ""]
-      }
+        rules: [newPolicy?.custom_pattern || ""],
+      };
     }
     if (isEditingPolicy) {
       updateConfig.mutate({
@@ -280,7 +343,6 @@ export const Policies: React.FC = () => {
         payload,
       });
     }
-
 
     // setNewPolicy({
     //   name: "",
@@ -332,7 +394,6 @@ export const Policies: React.FC = () => {
       });
     }
 
-
     // dispatch({ type: 'ADD_PLATFORM', payload: platform });
 
     // setNewPlatform({ tool_name: '', domain: '', is_allowed: true });
@@ -344,7 +405,7 @@ export const Policies: React.FC = () => {
     deletePlatformHook.mutate({
       businessId: state?.organization?.id ?? "",
       configurationId: id,
-    })
+    });
   };
 
   const getActionIcon = (action: ActionType) => {
@@ -396,17 +457,19 @@ export const Policies: React.FC = () => {
               AI Platforms
             </h2>
           </div>
-          <button
-            onClick={() => {
-              setIsEditingPlatform(false);
-              setNewPlatform(defaultPlatformValues);
-              setShowPlatformModal(true);
-            }}
-            className="inline-flex items-center px-3 py-1.5 bg-brand-600 text-white text-sm font-medium rounded-lg hover:bg-brand-700 transition-colors shadow-sm"
-          >
-            <Plus className="w-4 h-4 mr-1.5" />
-            Add AI Platform
-          </button>
+          {canCreatePlatform && (
+            <button
+              onClick={() => {
+                setIsEditingPlatform(false);
+                setNewPlatform(defaultPlatformValues);
+                setShowPlatformModal(true);
+              }}
+              className="inline-flex items-center px-3 py-1.5 bg-brand-600 text-white text-sm font-medium rounded-lg hover:bg-brand-700 transition-colors shadow-sm"
+            >
+              <Plus className="w-4 h-4 mr-1.5" />
+              Add AI Platform
+            </button>
+          )}
         </div>
 
         {platforms.isLoading ? (
@@ -416,70 +479,86 @@ export const Policies: React.FC = () => {
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {(platforms?.data?.data ?? []).map((platform) => (
-              <div
-                key={platform.id}
-                className="bg-white dark:bg-slate-800 p-4 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm hover:shadow-md transition-shadow"
-              >
-                <div className="flex flex-wrap gap-y-3 justify-between items-start">
-                  <div className="flex items-center gap-x-3">
-                    <div
-                      className={`p-2 rounded-lg ${platform.is_allowed ? "bg-emerald-50 text-emerald-600 dark:bg-emerald-900/20" : "bg-red-50 text-red-600 dark:bg-red-900/20"}`}
-                    >
-                      {platform.is_allowed ? (
-                        <ShieldCheck className="w-5 h-5" />
-                      ) : (
-                        <ShieldAlert className="w-5 h-5" />
-                      )}
+            {canSeePlatform ? (
+              (platforms?.data?.data ?? []).map((platform) => (
+                <div
+                  key={platform.id}
+                  className="bg-white dark:bg-slate-800 p-4 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm hover:shadow-md transition-shadow"
+                >
+                  <div className="flex flex-wrap gap-y-3 justify-between items-start">
+                    <div className="flex items-center gap-x-3">
+                      <div
+                        className={`p-2 rounded-lg ${platform.is_allowed ? "bg-emerald-50 text-emerald-600 dark:bg-emerald-900/20" : "bg-red-50 text-red-600 dark:bg-red-900/20"}`}
+                      >
+                        {platform.is_allowed ? (
+                          <ShieldCheck className="w-5 h-5" />
+                        ) : (
+                          <ShieldAlert className="w-5 h-5" />
+                        )}
+                      </div>
+                      <div>
+                        <h3 className="font-semibold text-slate-900 dark:text-white">
+                          {platform.tool_name}
+                        </h3>
+                        <p className="text-xs text-slate-500 dark:text-slate-400 font-mono">
+                          {platform.domain}
+                        </p>
+                      </div>
                     </div>
-                    <div>
-                      <h3 className="font-semibold text-slate-900 dark:text-white">
-                        {platform.tool_name}
-                      </h3>
-                      <p className="text-xs text-slate-500 dark:text-slate-400 font-mono">
-                        {platform.domain}
-                      </p>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-x-1">
-                    <button
-                      onClick={() => togglePlatform(platform)}
-                      className={`p-1 rounded-md transition-colors ${platform.is_allowed ? "text-emerald-600 hover:bg-emerald-50" : "text-slate-400 hover:bg-slate-100"}`}
-                      title={platform.is_allowed ? "Allowed" : "Blocked"}
-                    >
-                      {platform.is_allowed ? (
-                        <ToggleRight className="w-6 h-6" />
-                      ) : (
-                        <ToggleLeft className="w-6 h-6" />
+                    <div className="flex items-center gap-x-1">
+                      <button
+                        onClick={() => togglePlatform(platform)}
+                        className={`p-1 rounded-md transition-colors ${platform.is_allowed ? "text-emerald-600 hover:bg-emerald-50" : "text-slate-400 hover:bg-slate-100"}`}
+                        title={platform.is_allowed ? "Allowed" : "Blocked"}
+                      >
+                        {platform.is_allowed ? (
+                          <ToggleRight className="w-6 h-6" />
+                        ) : (
+                          <ToggleLeft className="w-6 h-6" />
+                        )}
+                      </button>
+                      {canCreatePlatform && (
+                        <button
+                          onClick={() => deletePlatform(platform.id)}
+                          disabled={deletePlatformHook.isPending}
+                          className="p-1 text-slate-400 hover:text-red-500 transition-colors"
+                        >
+                          {deletePlatformHook.isPending &&
+                          listOfDeletId?.[platform.id] ? (
+                            <Loader2 className="w-3 h-3 animate-spin" />
+                          ) : (
+                            <Trash2 className="w-4 h-4" />
+                          )}
+                        </button>
                       )}
-                    </button>
-                    <button
-                      onClick={() => deletePlatform(platform.id)}
-                      disabled={deletePlatformHook.isPending}
-                      className="p-1 text-slate-400 hover:text-red-500 transition-colors"
-                    >
-                      {deletePlatformHook.isPending && listOfDeletId?.[platform.id] ? <Loader2 className="w-3 h-3 animate-spin" /> : <Trash2 className="w-4 h-4" />}
-                    </button>
 
-                    <button
-                      onClick={() => {
-                        setIsEditingPlatform(true);
-                        setNewPlatform({
-                          id: platform.id,
-                          tool_name: platform.tool_name,
-                          domain: platform.domain,
-                          is_allowed: platform.is_allowed,
-                        });
-                        setShowPlatformModal(true);
-                      }}
-                      className="p-1 text-slate-400 hover:text-red-500 transition-colors"
-                    >
-                      <Pencil className="w-4 h-4" />
-                    </button>
+                      {canCreatePlatform && (
+                        <button
+                          onClick={() => {
+                            setIsEditingPlatform(true);
+                            setNewPlatform({
+                              id: platform.id,
+                              tool_name: platform.tool_name,
+                              domain: platform.domain,
+                              is_allowed: platform.is_allowed,
+                            });
+                            setShowPlatformModal(true);
+                          }}
+                          className="p-1 text-slate-400 hover:text-red-500 transition-colors"
+                        >
+                          <Pencil className="w-4 h-4" />
+                        </button>
+                      )}
+                    </div>
                   </div>
                 </div>
+              ))
+            ) : (
+              <div className="p-8 text-center text-slate-500">
+                <ShieldAlert className="w-12 h-12 mx-auto text-slate-300 mb-3" />
+                <p>Sorry you dont have access to view ai platforms</p>
               </div>
-            ))}
+            )}
           </div>
         )}
       </section>
@@ -493,17 +572,19 @@ export const Policies: React.FC = () => {
               DLP Policies
             </h2>
           </div>
-          <button
-            onClick={() => {
-              setIsEditingPolicy(false);
-              setNewPolicy(defaultPolicyValues);
-              setShowPolicyModal(true)
-            }}
-            className="inline-flex items-center px-3 py-1.5 bg-brand-600 text-white text-sm font-medium rounded-lg hover:bg-brand-700 transition-colors shadow-sm"
-          >
-            <Plus className="w-4 h-4 mr-1.5" />
-            New Policy
-          </button>
+          {canCreatePolicy && (
+            <button
+              onClick={() => {
+                setIsEditingPolicy(false);
+                setNewPolicy(defaultPolicyValues);
+                setShowPolicyModal(true);
+              }}
+              className="inline-flex items-center px-3 py-1.5 bg-brand-600 text-white text-sm font-medium rounded-lg hover:bg-brand-700 transition-colors shadow-sm"
+            >
+              <Plus className="w-4 h-4 mr-1.5" />
+              New Policy
+            </button>
+          )}
         </div>
 
         {configs.isLoading ? (
@@ -513,101 +594,117 @@ export const Policies: React.FC = () => {
           </div>
         ) : (
           <div className="grid gap-4">
-            {(configs?.data?.data ?? []).map((policy) => (
-              // {(configs?.data?.data ?? []).map((policy) => (
-              <div
-                key={policy.id}
-                className={`bg-white dark:bg-slate-800 rounded-xl border transition-all ${policy.is_enabled ? "border-slate-200 dark:border-slate-700 shadow-sm" : "border-slate-100 dark:border-slate-800 opacity-60"}`}
-              >
-                <div className="p-5">
-                  <div className="flex items-start justify-between">
-                    <div className="flex items-center space-x-3">
-                      <div
-                        className={`p-2 rounded-lg ${policy.is_enabled ? "bg-brand-50 text-brand-600 dark:bg-slate-700 dark:text-brand-400" : "bg-slate-100 text-slate-400 dark:bg-slate-800"}`}
-                      >
-                        <ListFilter className="w-5 h-5" />
-                      </div>
-                      <div>
-                        <div className="flex items-center space-x-2">
-                          <h3 className="text-base font-semibold text-slate-900 dark:text-white">
-                            {policy.data_type} policy
-                          </h3>
-                          <span className="px-2 py-0.5 bg-slate-100 dark:bg-slate-700 text-slate-500 dark:text-slate-400 text-[10px] font-bold rounded uppercase tracking-wider">
-                            Priority {policy.priority}
-                          </span>
+            {canSeePolicy ? (
+              (configs?.data?.data ?? []).map((policy) => (
+                // {(configs?.data?.data ?? []).map((policy) => (
+                <div
+                  key={policy.id}
+                  className={`bg-white dark:bg-slate-800 rounded-xl border transition-all ${policy.is_enabled ? "border-slate-200 dark:border-slate-700 shadow-sm" : "border-slate-100 dark:border-slate-800 opacity-60"}`}
+                >
+                  <div className="p-5">
+                    <div className="flex items-start justify-between">
+                      <div className="flex items-center space-x-3">
+                        <div
+                          className={`p-2 rounded-lg ${policy.is_enabled ? "bg-brand-50 text-brand-600 dark:bg-slate-700 dark:text-brand-400" : "bg-slate-100 text-slate-400 dark:bg-slate-800"}`}
+                        >
+                          <ListFilter className="w-5 h-5" />
                         </div>
-                        <p className="text-sm text-slate-500 dark:text-slate-400">
-                          Policy that {policy.action}s {policy.data_type}
-                        </p>
+                        <div>
+                          <div className="flex items-center space-x-2">
+                            <h3 className="text-base font-semibold text-slate-900 dark:text-white">
+                              {policy.data_type} policy
+                            </h3>
+                            <span className="px-2 py-0.5 bg-slate-100 dark:bg-slate-700 text-slate-500 dark:text-slate-400 text-[10px] font-bold rounded uppercase tracking-wider">
+                              Priority {policy.priority}
+                            </span>
+                          </div>
+                          <p className="text-sm text-slate-500 dark:text-slate-400">
+                            Policy that {policy.action}s {policy.data_type}
+                          </p>
+                        </div>
                       </div>
-                    </div>
-                    {/* <button onClick={() => togglePolicy(policy)} className="text-brand-600 hover:text-brand-700 dark:text-brand-400 focus:outline-none">
+                      {/* <button onClick={() => togglePolicy(policy)} className="text-brand-600 hover:text-brand-700 dark:text-brand-400 focus:outline-none">
                                 {policy.is_enabled ? <ToggleRight className="w-8 h-8" /> : <ToggleLeft className="w-8 h-8 text-slate-400" />}
                             </button> */}
-                    <button
-                      onClick={() => null}
-                      className="text-brand-600 hover:text-brand-700 dark:text-brand-400 focus:outline-none"
-                    >
-                      {policy.is_enabled ? (
-                        <ToggleRight className="w-8 h-8" />
-                      ) : (
-                        <ToggleLeft className="w-8 h-8 text-slate-400" />
-                      )}
-                    </button>
-                  </div>
-
-                  {/* Logic Builder Visualization */}
-                  <div className="mt-4 bg-slate-50 dark:bg-slate-900/50 rounded-lg p-3 border border-slate-200 dark:border-slate-700/50">
-                    <div className="flex flex-wrap items-center gap-2 text-sm">
-                      <span className="font-mono text-[10px] text-slate-500 uppercase tracking-widest">
-                        IF
-                      </span>
-                      <div className="px-2 py-1 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded text-slate-700 dark:text-slate-200 font-medium text-xs">
-                        Data contains{" "}
-                        <span className="text-brand-600 font-bold">
-                          {policy.data_type}
-                        </span>
-                      </div>
-                      <span className="font-mono text-[10px] text-slate-500 uppercase tracking-widest">
-                        THEN
-                      </span>
-                      <div
-                        className={`px-2 py-1 border rounded font-bold flex items-center gap-1.5 text-xs uppercase tracking-tight ${getActionStyles(policy.action as ActionType)}`}
+                      <button
+                        onClick={() => null}
+                        className="text-brand-600 hover:text-brand-700 dark:text-brand-400 focus:outline-none"
                       >
-                        {getActionIcon(policy.action as ActionType)}
-                        {policy.action}
+                        {policy.is_enabled ? (
+                          <ToggleRight className="w-8 h-8" />
+                        ) : (
+                          <ToggleLeft className="w-8 h-8 text-slate-400" />
+                        )}
+                      </button>
+                    </div>
+
+                    {/* Logic Builder Visualization */}
+                    <div className="mt-4 bg-slate-50 dark:bg-slate-900/50 rounded-lg p-3 border border-slate-200 dark:border-slate-700/50">
+                      <div className="flex flex-wrap items-center gap-2 text-sm">
+                        <span className="font-mono text-[10px] text-slate-500 uppercase tracking-widest">
+                          IF
+                        </span>
+                        <div className="px-2 py-1 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded text-slate-700 dark:text-slate-200 font-medium text-xs">
+                          Data contains{" "}
+                          <span className="text-brand-600 font-bold">
+                            {policy.data_type}
+                          </span>
+                        </div>
+                        <span className="font-mono text-[10px] text-slate-500 uppercase tracking-widest">
+                          THEN
+                        </span>
+                        <div
+                          className={`px-2 py-1 border rounded font-bold flex items-center gap-1.5 text-xs uppercase tracking-tight ${getActionStyles(policy.action as ActionType)}`}
+                        >
+                          {getActionIcon(policy.action as ActionType)}
+                          {policy.action}
+                        </div>
                       </div>
                     </div>
-                  </div>
 
-                  <div className="mt-4 flex justify-end items-center space-x-4 pt-3 border-t border-slate-100 dark:border-slate-800">
-                    <button
-                      onClick={() => deletePolicy(policy.id)}
-                      disabled={deleteConfig.isPending}
-                      className="text-xs text-slate-500 hover:text-red-500 flex items-center transition-colors"
-                    >
-                      {deleteConfig.isPending && listOfDeletId?.[policy.id]  ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <>
-                        <Trash2 className="w-3.5 h-3.5 mr-1" />
-                        Delete
-                      </>}
-
-                    </button>
-                    <button
-                      onClick={() => {
-                        setIsEditingPolicy(true);
-                        setShowPolicyModal(true);
-                        const convertedPolicy = convertPolicyResponseToPolicy(policy);
-                        setNewPolicy(convertedPolicy);
-                      }}
-                      className="text-xs font-medium text-brand-600 hover:text-brand-700 flex items-center transition-colors"
-                    >
-                      <Pencil className="w-3.5 h-3.5 mr-1" />
-                      Edit
-                    </button>
+                    <div className="mt-4 flex justify-end items-center space-x-4 pt-3 border-t border-slate-100 dark:border-slate-800">
+                      {canCreatePolicy && (
+                        <button
+                          onClick={() => deletePolicy(policy.id)}
+                          disabled={deleteConfig.isPending}
+                          className="text-xs text-slate-500 hover:text-red-500 flex items-center transition-colors"
+                        >
+                          {deleteConfig.isPending &&
+                          listOfDeletId?.[policy.id] ? (
+                            <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                          ) : (
+                            <>
+                              <Trash2 className="w-3.5 h-3.5 mr-1" />
+                              Delete
+                            </>
+                          )}
+                        </button>
+                      )}
+                      {canCreatePolicy && (
+                        <button
+                          onClick={() => {
+                            setIsEditingPolicy(true);
+                            setShowPolicyModal(true);
+                            const convertedPolicy =
+                              convertPolicyResponseToPolicy(policy);
+                            setNewPolicy(convertedPolicy);
+                          }}
+                          className="text-xs font-medium text-brand-600 hover:text-brand-700 flex items-center transition-colors"
+                        >
+                          <Pencil className="w-3.5 h-3.5 mr-1" />
+                          Edit
+                        </button>
+                      )}
+                    </div>
                   </div>
                 </div>
+              ))
+            ) : (
+              <div className="p-8 text-center text-slate-500">
+                <Shield className="w-12 h-12 mx-auto text-slate-300 mb-3" />
+                <p>Sorry you dont have access to view policy configurations</p>
               </div>
-            ))}
+            )}
           </div>
         )}
       </section>
@@ -622,7 +719,7 @@ export const Policies: React.FC = () => {
               </h2>
               <button
                 onClick={() => {
-                  setShowPlatformModal(false)
+                  setShowPlatformModal(false);
                   setIsEditingPlatform(false);
                   setNewPlatform(defaultPlatformValues);
                 }}
@@ -631,9 +728,13 @@ export const Policies: React.FC = () => {
                 <X className="w-6 h-6" />
               </button>
             </div>
-            <form onSubmit={(e) => {
-              e.preventDefault()
-              handleUpsertPlatform}} className="p-6 space-y-4">
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+                handleUpsertPlatform;
+              }}
+              className="p-6 space-y-4"
+            >
               <div>
                 <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
                   Platform Name
@@ -707,8 +808,10 @@ export const Policies: React.FC = () => {
                 >
                   {addPlatform.isPending || updatePlatform.isPending ? (
                     <Loader2 className="w-5 h-5 animate-spin" />
+                  ) : isEditingPlatform ? (
+                    "Edit Platform"
                   ) : (
-                    isEditingPlatform ? "Edit Platform" : "Add Platform"
+                    "Add Platform"
                   )}
                 </button>
               </div>
@@ -727,7 +830,7 @@ export const Policies: React.FC = () => {
               </h2>
               <button
                 onClick={() => {
-                  setShowPolicyModal(false)
+                  setShowPolicyModal(false);
                   setIsEditingPolicy(false);
                   setNewPolicy(defaultPolicyValues);
                 }}
@@ -736,10 +839,13 @@ export const Policies: React.FC = () => {
                 <X className="w-6 h-6" />
               </button>
             </div>
-            <form onSubmit={(e) => {
-              e.preventDefault()
-              handleUpsertPolicy(e)
-            }} className="p-6 space-y-4">
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+                handleUpsertPolicy(e);
+              }}
+              className="p-6 space-y-4"
+            >
               <div>
                 <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
                   Policy Name
@@ -793,13 +899,12 @@ export const Policies: React.FC = () => {
                   >
                     {/* <option value="ssn">SSN</option>
                     <option value="email">Email</option>
-                    <option value="nin">NIN</option> */}{
-                      ListOfAvailablePolicies.map((policy) => (
-                        <option key={policy.key} value={policy.key}>
-                          {policy.name}
-                        </option>
-                      ))
-                    }
+                    <option value="nin">NIN</option> */}
+                    {ListOfAvailablePolicies.map((policy) => (
+                      <option key={policy.key} value={policy.key}>
+                        {policy.name}
+                      </option>
+                    ))}
                   </select>
                 </div>
                 <div>
@@ -864,7 +969,8 @@ export const Policies: React.FC = () => {
               {newPolicy?.data_type === "custom" && (
                 <div>
                   <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
-                    Add a regex pattern to identify the custom data type in the format of /your_regex_pattern/
+                    Add a regex pattern to identify the custom data type in the
+                    format of /your_regex_pattern/
                   </label>
                   <input
                     type="text"
@@ -922,8 +1028,10 @@ export const Policies: React.FC = () => {
                 >
                   {addConfig.isPending || updateConfig.isPending ? (
                     <Loader2 className="w-5 h-5 animate-spin" />
+                  ) : isEditingPolicy ? (
+                    "Edit Policy"
                   ) : (
-                    isEditingPolicy ? "Edit Policy" : "Create Policy"
+                    "Create Policy"
                   )}
                 </button>
               </div>

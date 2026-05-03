@@ -34,10 +34,14 @@ export const businessQueryKeys = {
   detail: (id: string) => [...businessQueryKeys.all, "detail", id] as const,
   members: (businessId: string) =>
     [...businessQueryKeys.all, "members", businessId] as const,
+  membersPaginated: (businessId: string , pageSize: number, page: number) =>
+    [...businessQueryKeys.all, "members", businessId, page, pageSize] as const,
   member: (businessId: string) =>
     [...businessQueryKeys.all, "member", businessId] as const,
   roles: (businessId: string) =>
     [...businessQueryKeys.all, "roles", businessId] as const,
+  rolesPaginated: (businessId: string, pageSize: number, page: number) =>
+    [...businessQueryKeys.all, "roles", businessId, page, pageSize] as const,
   role: (businessId: string, roleId: string) =>
     [...businessQueryKeys.all, "roles", businessId, roleId] as const,
   
@@ -48,10 +52,12 @@ export const businessQueryKeys = {
 ========================= */
 
 export const getBusinessMembers = async (
-  businessId: string
+  businessId: string,
+  pageSize: number,
+  page: number,
 ): Promise<GetBusinessMembersResponse> => {
   const response = await api.get<GetBusinessMembersResponse>(
-    `/business/${businessId}/members`
+    `/business/${businessId}/members?pageSize=${pageSize}&page=${page}`
   );
 
   return response.data;
@@ -117,10 +123,12 @@ export const unassignBusinessRolePermissions = async (
 };
 
 export const getBusinessRoles = async (
-  businessId: string
+  businessId: string,
+  pageSize: number,
+  page: number,
 ): Promise<GetBusinessRolesResponse> => {
   const response = await api.get<GetBusinessRolesResponse>(
-    `/business/${businessId}/roles`
+    `/business/${businessId}/roles?pageSize=${pageSize}&page=${page}`
   );
 
   return response.data;
@@ -142,14 +150,16 @@ export const getBusinessMember = async (
 
 export const useGetBusinessRoles = (
   businessId: string,
+  pageSize: number,
+  page: number,
   options?: Omit<
     UseQueryOptions<GetBusinessRolesResponse, AxiosError<ApiErrorResponse>>,
     "queryKey" | "queryFn"
   >
 ) => {
   return useQuery<GetBusinessRolesResponse, AxiosError<ApiErrorResponse>>({
-    queryKey: businessQueryKeys.roles(businessId),
-    queryFn: () => getBusinessRoles(businessId),
+    queryKey: businessQueryKeys.rolesPaginated(businessId, pageSize, page),
+    queryFn: () => getBusinessRoles(businessId, pageSize, page),
     enabled: !!businessId,
     ...options,
   });
@@ -157,14 +167,16 @@ export const useGetBusinessRoles = (
 
 export const useGetBusinessMembers = (
   businessId: string,
+  pageSize: number,
+  page: number,
   options?: Omit<
     UseQueryOptions<GetBusinessMembersResponse, AxiosError<ApiErrorResponse>>,
     "queryKey" | "queryFn"
   >
 ) => {
   return useQuery<GetBusinessMembersResponse, AxiosError<ApiErrorResponse>>({
-    queryKey: businessQueryKeys.members(businessId),
-    queryFn: () => getBusinessMembers(businessId),
+    queryKey: businessQueryKeys.membersPaginated(businessId , pageSize, page),
+    queryFn: () => getBusinessMembers(businessId , pageSize, page),
     enabled: !!businessId,
     ...options,
   });
