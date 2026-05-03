@@ -25,7 +25,7 @@ const UserInviteForm = ({
     state,
     dispatch,
   }: { state: AppState; dispatch: React.Dispatch<Action> } = useStore();
-  const roles = useGetBusinessRoles(state?.organization?.id ?? "");
+  const roles = useGetBusinessRoles(state?.organization?.id ?? "", 500 , 1);
 
   return (
     <div

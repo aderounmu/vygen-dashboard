@@ -68,10 +68,13 @@ export const Users: React.FC = () => {
     status: "Active",
   });
 
-  const handleOpenModal = (user?: User) => {
+  const handleOpenModal = (user?: User & {roleId: string}) => {
     if (user) {
       setEditingUser(user);
-      setFormData(user);
+      setFormData({
+        ...user,
+        department: user.roleId
+      });
     } else {
       setEditingUser(null);
       setFormData({
@@ -139,7 +142,7 @@ export const Users: React.FC = () => {
       : data?.data?.map(
           (user) =>
             ({
-              id: user.id,
+              id: user.id, // Note this is the businss MemberId
               avatar: "",
               name: `${user.user.first_name} ${user.user.last_name}`,
               department: user.business_member_role.Role.role,
@@ -149,7 +152,8 @@ export const Users: React.FC = () => {
               email: user.email,
               organizationId: user.business_id,
               country: user.user.country,
-            }) as User,
+              roleId: user.business_member_role.role_id
+            }) as User & {roleId: string},
         );
 
   return (
@@ -275,7 +279,8 @@ export const Users: React.FC = () => {
                           </div>
                         </td>
                         <td className="px-6 py-4 text-right">
-                          <div className="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                          <div className="flex items-center justify-end gap-2">
+                          {/* <div className="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity"> */}
                             {canAssignRoleUser && (
                               <button
                                 onClick={() => handleOpenModal(user)}
@@ -339,7 +344,9 @@ export const Users: React.FC = () => {
               handleCloseModal={handleCloseModal}
               formData={formData}
               setFormData={setFormData}
-              userId=""
+              userId={editingUser.id}
+              bussinessMemberId={editingUser.id}
+              bussinessId={state.organization?.id ?? ""}
             />
           ) : (
             <UserInviteModal

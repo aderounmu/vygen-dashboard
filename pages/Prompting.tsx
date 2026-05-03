@@ -57,7 +57,7 @@ export const Prompting: React.FC = () => {
 
   // const bussines_member_id = "f4054b61-4e54-4c8b-b74e-af3b60396e17";
 
-  const plaforms = useGetAiToolConfigurations(state?.organization?.id ?? "");
+  const plaforms = useGetAiToolConfigurations(state?.organization?.id ?? "", 500, 1); // change to infinit scroll
   const [selectedPlatform, setSelectedPlatform] = useState(
     (plaforms?.data?.data ?? [])[0]?.tool_name,
   );

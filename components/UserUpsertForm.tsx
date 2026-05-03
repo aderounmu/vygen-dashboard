@@ -11,6 +11,7 @@ const UserUpsertForm = <T extends Partial<User>>({
   handleCloseModal,
   formData,
   setFormData,
+  mode="create",
   isLoading = false,
   showCancelButton = true,
   showStatusSection = true,
@@ -19,6 +20,7 @@ const UserUpsertForm = <T extends Partial<User>>({
 }: {
   handleCloseModal: () => void;
   submitTitle: string;
+  mode:"edit"| "create"
   handleSubmit: () => void;
   title: string;
   formData: T;
@@ -33,7 +35,7 @@ const UserUpsertForm = <T extends Partial<User>>({
     state,
     dispatch,
   }: { state: AppState; dispatch: React.Dispatch<Action> } = useStore();
-  const roles = useGetBusinessRoles(state?.organization?.id ?? "");
+  const roles = useGetBusinessRoles(state?.organization?.id ?? "",500,1); // change to use infinite
 
   return (
     <div
@@ -83,6 +85,7 @@ const UserUpsertForm = <T extends Partial<User>>({
                 <input
                   type="text"
                   required
+                  disabled={mode=="edit"}
                   className="block w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg focus:ring-brand-500 focus:border-brand-500 dark:bg-slate-700 dark:text-white sm:text-sm"
                   placeholder="John"
                   value={formData.firstName || ""}
@@ -98,6 +101,7 @@ const UserUpsertForm = <T extends Partial<User>>({
                 <input
                   type="text"
                   required
+                  disabled={mode=="edit"}
                   className="block w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg focus:ring-brand-500 focus:border-brand-500 dark:bg-slate-700 dark:text-white sm:text-sm"
                   placeholder="Doe"
                   value={formData.lastName || ""}
@@ -119,6 +123,7 @@ const UserUpsertForm = <T extends Partial<User>>({
                 <input
                   type="email"
                   required
+                  disabled={mode=="edit"}
                   className="block w-full pl-10 pr-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg focus:ring-brand-500 focus:border-brand-500 dark:bg-slate-700 dark:text-white sm:text-sm"
                   placeholder="john@company.com"
                   value={formData.email || ""}
@@ -146,6 +151,7 @@ const UserUpsertForm = <T extends Partial<User>>({
               <select
                 className="block w-full pl-11 pr-4 py-3.5 bg-slate-50 dark:bg-slate-900 border-none rounded-2xl text-slate-900 dark:text-white placeholder-slate-400 focus:ring-2 focus:ring-brand-500 transition-all"
                 id="country"
+                disabled={mode=="edit"}
                 value={formData.country}
                 onChange={(e) =>
                   setFormData({ ...formData, country: e.target.value })
@@ -174,11 +180,11 @@ const UserUpsertForm = <T extends Partial<User>>({
                   </option>
                 ))} */}
                 {(roles?.data?.data ?? []).map((dept) => (
-                  <option key={dept.id} value={dept.role}>
+                  <option key={dept.id} value={dept.id}>
                     {dept.role}
                   </option>
                 ))}
-                <option value="Unassigned">Unassigned</option>
+                {roles.isLoading &&<option value="Unassigned">.....loading</option>}
               </select>
             </div>}
 
@@ -194,6 +200,7 @@ const UserUpsertForm = <T extends Partial<User>>({
                       className="form-radio text-brand-600 focus:ring-brand-500"
                       name="status"
                       value="Active"
+                      disabled={mode=="edit"}
                       checked={formData.status === "Active"}
                       onChange={() =>
                         setFormData({ ...formData, status: "Active" })

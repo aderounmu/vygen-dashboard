@@ -1,15 +1,19 @@
 import { User } from "../auth/type";
-import { ApiSuccessResponse , BaseTimestamps, PaginatedResponse } from "../types";
+import {
+  ApiSuccessResponse,
+  BaseTimestamps,
+  PaginatedResponse,
+} from "../types";
 
 /* =========================
    BUSINESS MEMBER ENTITY
 ========================= */
 
 export interface BusinessMemberRole extends BaseTimestamps {
-   id: string ,
-   role_id : string,
+  id: string;
+  role_id: string;
 
-   Role: BusinessRole
+  Role: BusinessRole;
 }
 
 export interface BusinessMember {
@@ -23,18 +27,16 @@ export interface BusinessMember {
 
   user: User;
 
-  business_member_role: BusinessMemberRole
+  business_member_role: BusinessMemberRole;
 }
 
 /* =========================
    RESPONSE TYPES
 ========================= */
 
-
 export type GetBusinessRolesResponse = PaginatedResponse<BusinessRole>;
 
-export type GetBusinessMembersResponse =
-  PaginatedResponse<BusinessMember>;
+export type GetBusinessMembersResponse = PaginatedResponse<BusinessMember>;
 
 export interface Business {
   id: string;
@@ -116,25 +118,54 @@ export interface GetBusinessesResponse {
   current_page: number;
 }
 
-export interface CreateBusinessResponse
-  extends ApiSuccessResponse<Business[]> {}
+export interface CreateBusinessResponse extends ApiSuccessResponse<
+  Business[]
+> {}
 
-export interface CreateBusinessMemberResponse
-  extends ApiSuccessResponse<BusinessMember[]> {}
+export interface CreateBusinessMemberResponse extends ApiSuccessResponse<
+  BusinessMember[]
+> {}
 
-export interface CreateBusinessRoleResponse
-  extends ApiSuccessResponse<BusinessRole[]> {}
+export interface CreateBusinessRoleResponse extends ApiSuccessResponse<
+  BusinessRole[]
+> {}
 
-export interface AssignBusinessRolePermissionsResponse
-  extends ApiSuccessResponse<BusinessRole[]> {}
+export interface AssignBusinessRolePermissionsResponse extends ApiSuccessResponse<
+  BusinessRole[]
+> {}
 
-export interface UnassignBusinessRolePermissionsResponse
-  extends ApiSuccessResponse<BusinessRole[]> {}
+export interface UnassignBusinessRolePermissionsResponse extends ApiSuccessResponse<
+  BusinessRole[]
+> {}
 
-
-  export interface GetBusinessMemberResponse {
+export interface GetBusinessMemberResponse {
   data: BusinessMember;
   total_items: number;
   total_pages: number;
   current_page: number;
-  }
+}
+
+
+
+export interface AssignRoleToMemberRequest {
+  business_id: string;
+  role_id: string;
+  business_member_id: string;
+}
+
+
+export interface AssignedRole {
+  id: string;
+  role_id: string;
+  business_member_id: string;
+  created_at: string;
+  updated_at: string;
+
+  Role: BusinessRole
+
+  BusinessMember: any | null;
+}
+
+
+export interface AssignRoleToMemberResponse
+  extends ApiSuccessResponse<AssignedRole[]> {}

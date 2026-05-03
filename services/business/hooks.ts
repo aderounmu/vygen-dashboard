@@ -21,7 +21,8 @@ import {
   GetBusinessRolesResponse,
   UnassignBusinessRolePermissionsRequest,
   UnassignBusinessRolePermissionsResponse,
-  GetBusinessMemberResponse
+  GetBusinessMemberResponse,
+  AssignRoleToMemberResponse,
 } from "./types";
 
 /* =========================
@@ -34,7 +35,7 @@ export const businessQueryKeys = {
   detail: (id: string) => [...businessQueryKeys.all, "detail", id] as const,
   members: (businessId: string) =>
     [...businessQueryKeys.all, "members", businessId] as const,
-  membersPaginated: (businessId: string , pageSize: number, page: number) =>
+  membersPaginated: (businessId: string, pageSize: number, page: number) =>
     [...businessQueryKeys.all, "members", businessId, page, pageSize] as const,
   member: (businessId: string) =>
     [...businessQueryKeys.all, "member", businessId] as const,
@@ -44,7 +45,6 @@ export const businessQueryKeys = {
     [...businessQueryKeys.all, "roles", businessId, page, pageSize] as const,
   role: (businessId: string, roleId: string) =>
     [...businessQueryKeys.all, "roles", businessId, roleId] as const,
-  
 };
 
 /* =========================
@@ -57,12 +57,11 @@ export const getBusinessMembers = async (
   page: number,
 ): Promise<GetBusinessMembersResponse> => {
   const response = await api.get<GetBusinessMembersResponse>(
-    `/business/${businessId}/members?pageSize=${pageSize}&page=${page}`
+    `/business/${businessId}/members?pageSize=${pageSize}&page=${page}`,
   );
 
   return response.data;
 };
-
 
 export const getBusinesses = async (): Promise<GetBusinessesResponse> => {
   const response = await api.get<GetBusinessesResponse>("/business");
@@ -70,7 +69,7 @@ export const getBusinesses = async (): Promise<GetBusinessesResponse> => {
 };
 
 export const createBusiness = async (
-  payload: CreateBusinessRequest
+  payload: CreateBusinessRequest,
 ): Promise<CreateBusinessResponse> => {
   const response = await api.post<CreateBusinessResponse>("/business", payload);
   return response.data;
@@ -78,22 +77,22 @@ export const createBusiness = async (
 
 export const createBusinessMember = async (
   businessId: string,
-  payload: CreateBusinessMemberRequest
+  payload: CreateBusinessMemberRequest,
 ): Promise<CreateBusinessMemberResponse> => {
   const response = await api.post<CreateBusinessMemberResponse>(
     `/business/${businessId}/member`,
-    payload
+    payload,
   );
   return response.data;
 };
 
 export const createBusinessRole = async (
   businessId: string,
-  payload: CreateBusinessRoleRequest
+  payload: CreateBusinessRoleRequest,
 ): Promise<CreateBusinessRoleResponse> => {
   const response = await api.post<CreateBusinessRoleResponse>(
     `/business/${businessId}/roles`,
-    payload
+    payload,
   );
   return response.data;
 };
@@ -101,11 +100,11 @@ export const createBusinessRole = async (
 export const assignBusinessRolePermissions = async (
   businessId: string,
   roleId: string,
-  payload: AssignBusinessRolePermissionsRequest
+  payload: AssignBusinessRolePermissionsRequest,
 ): Promise<AssignBusinessRolePermissionsResponse> => {
   const response = await api.post<AssignBusinessRolePermissionsResponse>(
     `/business/${businessId}/roles/${roleId}/permissions/assign`,
-    payload
+    payload,
   );
   return response.data;
 };
@@ -113,11 +112,11 @@ export const assignBusinessRolePermissions = async (
 export const unassignBusinessRolePermissions = async (
   businessId: string,
   roleId: string,
-  payload: UnassignBusinessRolePermissionsRequest
+  payload: UnassignBusinessRolePermissionsRequest,
 ): Promise<UnassignBusinessRolePermissionsResponse> => {
   const response = await api.post<UnassignBusinessRolePermissionsResponse>(
     `/business/${businessId}/roles/${roleId}/permissions/unassign`,
-    payload
+    payload,
   );
   return response.data;
 };
@@ -128,17 +127,17 @@ export const getBusinessRoles = async (
   page: number,
 ): Promise<GetBusinessRolesResponse> => {
   const response = await api.get<GetBusinessRolesResponse>(
-    `/business/${businessId}/roles?pageSize=${pageSize}&page=${page}`
+    `/business/${businessId}/roles?pageSize=${pageSize}&page=${page}`,
   );
 
   return response.data;
 };
 
 export const getBusinessMember = async (
-  businessId: string
+  businessId: string,
 ): Promise<GetBusinessMemberResponse> => {
   const response = await api.get<GetBusinessMemberResponse>(
-    `/business/${businessId}/member`
+    `/business/${businessId}/member`,
   );
 
   return response.data;
@@ -155,7 +154,7 @@ export const useGetBusinessRoles = (
   options?: Omit<
     UseQueryOptions<GetBusinessRolesResponse, AxiosError<ApiErrorResponse>>,
     "queryKey" | "queryFn"
-  >
+  >,
 ) => {
   return useQuery<GetBusinessRolesResponse, AxiosError<ApiErrorResponse>>({
     queryKey: businessQueryKeys.rolesPaginated(businessId, pageSize, page),
@@ -172,11 +171,11 @@ export const useGetBusinessMembers = (
   options?: Omit<
     UseQueryOptions<GetBusinessMembersResponse, AxiosError<ApiErrorResponse>>,
     "queryKey" | "queryFn"
-  >
+  >,
 ) => {
   return useQuery<GetBusinessMembersResponse, AxiosError<ApiErrorResponse>>({
-    queryKey: businessQueryKeys.membersPaginated(businessId , pageSize, page),
-    queryFn: () => getBusinessMembers(businessId , pageSize, page),
+    queryKey: businessQueryKeys.membersPaginated(businessId, pageSize, page),
+    queryFn: () => getBusinessMembers(businessId, pageSize, page),
     enabled: !!businessId,
     ...options,
   });
@@ -186,7 +185,7 @@ export const useGetBusinesses = (
   options?: Omit<
     UseQueryOptions<GetBusinessesResponse, AxiosError<ApiErrorResponse>>,
     "queryKey" | "queryFn"
-  >
+  >,
 ) => {
   return useQuery<GetBusinessesResponse, AxiosError<ApiErrorResponse>>({
     queryKey: businessQueryKeys.lists(),
@@ -200,7 +199,7 @@ export const useGetBusinessMember = (
   options?: Omit<
     UseQueryOptions<GetBusinessMemberResponse, AxiosError<ApiErrorResponse>>,
     "queryKey" | "queryFn"
-  >
+  >,
 ) => {
   return useQuery<GetBusinessMemberResponse, AxiosError<ApiErrorResponse>>({
     queryKey: businessQueryKeys.member(businessId),
@@ -219,7 +218,7 @@ export const useCreateBusiness = (
     CreateBusinessResponse,
     CreateBusinessRequest,
     AxiosError<ApiErrorResponse>
-  >
+  >,
 ) => {
   const queryClient = useQueryClient();
 
@@ -252,7 +251,7 @@ export const useCreateBusinessMember = (
     CreateBusinessMemberResponse,
     CreateBusinessMemberVariables,
     AxiosError<ApiErrorResponse>
-  >
+  >,
 ) => {
   const queryClient = useQueryClient();
 
@@ -286,7 +285,7 @@ export const useCreateBusinessRole = (
     CreateBusinessRoleResponse,
     CreateBusinessRoleVariables,
     AxiosError<ApiErrorResponse>
-  >
+  >,
 ) => {
   const queryClient = useQueryClient();
 
@@ -325,7 +324,7 @@ export const useAssignBusinessRolePermissions = (
     AssignBusinessRolePermissionsResponse,
     AssignBusinessRolePermissionsVariables,
     AxiosError<ApiErrorResponse>
-  >
+  >,
 ) => {
   const queryClient = useQueryClient();
 
@@ -341,7 +340,10 @@ export const useAssignBusinessRolePermissions = (
     },
     onSuccess: async (data, variables, context) => {
       await queryClient.invalidateQueries({
-        queryKey: businessQueryKeys.role(variables.businessId, variables.roleId),
+        queryKey: businessQueryKeys.role(
+          variables.businessId,
+          variables.roleId,
+        ),
       });
 
       await queryClient.invalidateQueries({
@@ -364,7 +366,7 @@ export const useUnassignBusinessRolePermissions = (
     UnassignBusinessRolePermissionsResponse,
     UnassignBusinessRolePermissionsVariables,
     AxiosError<ApiErrorResponse>
-  >
+  >,
 ) => {
   const queryClient = useQueryClient();
 
@@ -380,11 +382,88 @@ export const useUnassignBusinessRolePermissions = (
     },
     onSuccess: async (data, variables, context) => {
       await queryClient.invalidateQueries({
-        queryKey: businessQueryKeys.role(variables.businessId, variables.roleId),
+        queryKey: businessQueryKeys.role(
+          variables.businessId,
+          variables.roleId,
+        ),
       });
 
       await queryClient.invalidateQueries({
         queryKey: businessQueryKeys.roles(variables.businessId),
+      });
+
+      effect?.successFn?.(data, variables, context);
+    },
+  });
+};
+
+export interface AssignRoleToMemberVariables {
+  businessId: string;
+  roleId: string;
+  payload: {
+    business_member_id: string;
+  };
+}
+
+export const assignRoleToBusinessMember = async (
+  businessId: string,
+  roleId: string,
+  payload: { business_member_id: string },
+): Promise<AssignRoleToMemberResponse> => {
+  const response = await api.post<AssignRoleToMemberResponse>(
+    `/business/${businessId}/roles/${roleId}/members/assign`,
+    payload,
+  );
+
+  return response.data;
+};
+
+export const useAssignRoleToMember = (
+  effect?: ApiHookEffect<
+    AssignRoleToMemberResponse,
+    AssignRoleToMemberVariables,
+    AxiosError<ApiErrorResponse>
+  >,
+) => {
+  const queryClient = useQueryClient();
+
+  return useMutation<
+    AssignRoleToMemberResponse,
+    AxiosError<ApiErrorResponse>,
+    AssignRoleToMemberVariables
+  >({
+    mutationFn: ({ businessId, roleId, payload }) =>
+      assignRoleToBusinessMember(businessId, roleId, payload),
+
+    onError: (error, variables, context) => {
+      effect?.failureFn?.(error, variables, context);
+    },
+
+    onSuccess: async (data, variables, context) => {
+      // invalidate roles (role membership changed)
+      await queryClient.invalidateQueries({
+        queryKey: businessQueryKeys.role(
+          variables.businessId,
+          variables.roleId,
+        ),
+      });
+
+      await queryClient.invalidateQueries({
+        queryKey: businessQueryKeys.roles(variables.businessId),
+      });
+
+      // invalidate members (member now has role)
+
+      await queryClient.invalidateQueries({
+        queryKey: businessQueryKeys.members(variables.businessId),
+      });
+      
+      await queryClient.invalidateQueries({
+        queryKey: ["members"],
+      });
+
+      await queryClient.invalidateQueries({
+        queryKey: ["business"],
       });
 
       effect?.successFn?.(data, variables, context);

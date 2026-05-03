@@ -73,6 +73,7 @@ export const AcceptInvite = () => {
   return (
     <UserUpsertForm<InviteUser>
       formData={formData}
+      mode="create"
       setFormData={setFormData}
       isLoading={createbusinessMember.isPending}
       handleSubmit={() => handleSubmit()}
