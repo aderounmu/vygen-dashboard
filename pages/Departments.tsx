@@ -180,7 +180,7 @@ export const Departments: React.FC = () => {
             </span>
           </div>
           <p className="text-2xl font-bold text-slate-900 dark:text-white">
-            {state.departments.length}
+            { totalItems}
           </p>
         </div>
         {/* <div className="bg-white dark:bg-slate-800 p-4 rounded-2xl border border-slate-100 dark:border-slate-700 shadow-sm">
@@ -287,7 +287,7 @@ export const Departments: React.FC = () => {
                       <div className="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
                         {canUpdateRoles && (
                           <button
-                            // onClick={() => handleOpenModal(dept)}
+                            onClick={() => handleOpenModal(dept)}
                             className="p-2 text-slate-400 hover:text-brand-600 hover:bg-brand-50 dark:hover:bg-brand-900/20 rounded-lg transition-all"
                           >
                             <Edit2 className="w-4 h-4" />
@@ -313,12 +313,12 @@ export const Departments: React.FC = () => {
           </table>
         </div>
         <Pagination
-         isLoading={isLoading}
-        page={page} 
-        itemsPerPage={itemsPerPage}
-        totalItems={totalItems}
-        setPage={setPage}
-        totalPages={totalPages}
+          isLoading={isLoading}
+          page={page}
+          itemsPerPage={itemsPerPage}
+          totalItems={totalItems}
+          setPage={setPage}
+          totalPages={totalPages}
         ></Pagination>
       </div>
 
@@ -330,6 +330,9 @@ export const Departments: React.FC = () => {
               handleCloseModal={handleCloseModal}
               formData={formData}
               setFormData={setFormData}
+              roleId={editingDept.id}
+              originalPermission={editingDept.permissions}
+              bussinessId={state?.organization?.id ?? ""}
             ></DepartmentEditModal>
           ) : (
             <DepartmentCreateModal

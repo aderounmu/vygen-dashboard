@@ -65,7 +65,7 @@ const DepartmentCreateModal = (props:{
 
     }
   return (
-    <DepartmentUpsertForm  title='Create New Department' submitTitle= 'Create Department' isLoading={addPermissionToRole.isPending || createBusinessRole.isPending}  handleSubmit={()=>handleSubmit()} {...props}/>
+    <DepartmentUpsertForm mode='create'  title='Create New Department' submitTitle= 'Create Department' isLoading={addPermissionToRole.isPending || createBusinessRole.isPending}  handleSubmit={()=>handleSubmit()} {...props}/>
   )
 }
 

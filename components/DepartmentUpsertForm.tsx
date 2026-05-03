@@ -12,11 +12,14 @@ const DepartmentUpsertForm = ({
     formData,
     setFormData,
     isLoading = false,
+    mode = "create"
 }:{
     handleCloseModal : () => void,
     submitTitle: string, 
     handleSubmit: () => void
     title: string,
+    mode: "create" | "edit",
+
     formData: Partial<Department>,
     setFormData:  React.Dispatch<React.SetStateAction<{
     name: string;
@@ -60,6 +63,8 @@ const DepartmentUpsertForm = ({
                   <label className="text-sm font-semibold text-slate-700 dark:text-slate-300">Department Name</label>
                   <input 
                     required
+                    disabled ={mode === "edit"}
+                    
                     type="text"
                     className="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-brand-500 transition-all"
                     placeholder="e.g., Engineering"
@@ -71,6 +76,7 @@ const DepartmentUpsertForm = ({
                   <label className="text-sm font-semibold text-slate-700 dark:text-slate-300">Description</label>
                   <input 
                     required
+                    disabled ={mode === "edit"}
                     type="text"
                     className="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-brand-500 transition-all"
                     placeholder="Brief purpose of this department"
