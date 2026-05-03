@@ -28,7 +28,10 @@ import {
   Loader2,
 } from "lucide-react";
 import { RiskLevel } from "../types";
-import { useGetBusinesses } from "@/services/business/hooks";
+import {
+  useGetBusinesses,
+  useGetBusinessMemberProfiles,
+} from "@/services/business/hooks";
 import {
   useGetHighRiskCount,
   useGetTopDataTypes,
@@ -48,38 +51,26 @@ export const Dashboard: React.FC = () => {
 
   console.log("Dashboard <!---->");
 
-  const business = useGetBusinesses();
+  
+  
 
-  const _business = business.data?.data[0];
+  
 
-  const timeTrend = useGetTrends(_business?.id ?? "");
+  
 
-  const totalPrompt = useGetTotalPrompts(_business?.id ?? "");
+  const timeTrend = useGetTrends(state.organization?.id ?? "");
 
-  const riskyPrompt = useGetHighRiskCount(_business?.id ?? "");
+  const totalPrompt = useGetTotalPrompts(state.organization?.id ?? "");
 
-  const topTools = useGetTopTools(_business?.id ?? "");
+  const riskyPrompt = useGetHighRiskCount(state.organization?.id ?? "");
+
+  const topTools = useGetTopTools(state.organization?.id ?? "");
 
   //   const prompts = useGet
 
-  const topDatatypes = useGetTopDataTypes(_business?.id ?? "");
+  const topDatatypes = useGetTopDataTypes(state.organization?.id ?? "");
   //   const user = us
-  React.useEffect(() => {
-    const _business = business.data?.data[0];
-    if (_business) {
-      dispatch({
-        type: "SET_ORGANIZATION",
-        payload: {
-          organization: {
-            id: _business.id,
-            name: _business.name,
-            email: _business.email,
-            reference: _business.reference,
-          },
-        },
-      });
-    }
-  }, [business.data]);
+  
 
   // Calculate Metrics on the fly based on events state
   const metrics = useMemo(() => {
@@ -172,7 +163,7 @@ export const Dashboard: React.FC = () => {
   //   ];
 
   if (
-    business.isLoading ||
+    
     topDatatypes.isLoading ||
     timeTrend.isLoading ||
     riskyPrompt.isLoading ||

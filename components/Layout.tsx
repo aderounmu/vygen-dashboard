@@ -28,6 +28,8 @@ import { Action, AppState, useStore } from "../context/Store";
 import { clearAuthStorage } from "@/services/auth/storage";
 import { useGetBusinessMember } from "@/services/business/hooks";
 import { useHasPermission } from "@/hooks/usePermission";
+import useHydrateBusinessProfile from "@/hooks/useHydrateBusinessProfile";
+import { OrganizationSwitcher } from "./OrganizationPicker";
 
 export const Layout: React.FC = () => {
   const {
@@ -37,42 +39,79 @@ export const Layout: React.FC = () => {
   const location = useLocation();
 
   const bussiness_member = useGetBusinessMember(state?.organization?.id ?? "");
-  const canSeeUsers = useHasPermission([
-    "can-invite-business-member",
-    "can-view-business-members",
-    "can-assign-role-to-business-member",
-  ], state?.organization?.id ?? "");
+  const canSeeUsers = useHasPermission(
+    [
+      "can-invite-business-member",
+      "can-view-business-members",
+      "can-assign-role-to-business-member",
+    ],
+    state?.organization?.id ?? "",
+  );
 
-  const canSeePrompts = useHasPermission([
-    "can-view-prompt-events",
-  ], state?.organization?.id ?? "");
+  const canSeePrompts = useHasPermission(
+    ["can-view-prompt-events"],
+    state?.organization?.id ?? "",
+  );
 
-   const canSeeRoles = useHasPermission([
-    "can-view-business-roles",
-    "can-view-business-member-roles",
-    "can-assign-business-member-role",
-    "can-unassign-permission-from-role",
-    "can-assign-permission-to-role",
-    "can-create-business-roles",
-  ], state?.organization?.id ?? "");
+  const canSeeRoles = useHasPermission(
+    [
+      "can-view-business-roles",
+      "can-view-business-member-roles",
+      "can-assign-business-member-role",
+      "can-unassign-permission-from-role",
+      "can-assign-permission-to-role",
+      "can-create-business-roles",
+    ],
+    state?.organization?.id ?? "",
+  );
 
-  const canSeePolicy = useHasPermission([
-    "can-create-dlp-ai-tool-config",
-    "can-view-dlp-ai-tool-config",
-    "can-create-dlp-data-classification",
-    "can-view-dlp-data-classifications",
-  ], state?.organization?.id ?? "");
+  const canSeePolicy = useHasPermission(
+    [
+      "can-create-dlp-ai-tool-config",
+      "can-view-dlp-ai-tool-config",
+      "can-create-dlp-data-classification",
+      "can-view-dlp-data-classifications",
+    ],
+    state?.organization?.id ?? "",
+  );
 
   const menuGroups = [
     {
       title: "GENERAL",
       items: [
-        { name: "Dashboard", path: "/", icon: LayoutDashboard  ,show: true},
-        { name: "Activity Log", path: "/activity", icon: Activity  ,show: canSeePrompts},
-        { name: "Policies", path: "/policies", icon: ShieldAlert  ,show: canSeePolicy},
-        { name: "Prompting", path: "/prompting", icon: Terminal, badge: "NEW"  ,show: true},
-        { name: "Users", path: "/users", icon: Users, badge: "8"  ,show: canSeeUsers},
-        { name: "Departments", path: "/departments", icon: Building2  ,show: canSeeRoles},
+        { name: "Dashboard", path: "/", icon: LayoutDashboard, show: true },
+        {
+          name: "Activity Log",
+          path: "/activity",
+          icon: Activity,
+          show: canSeePrompts,
+        },
+        {
+          name: "Policies",
+          path: "/policies",
+          icon: ShieldAlert,
+          show: canSeePolicy,
+        },
+        {
+          name: "Prompting",
+          path: "/prompting",
+          icon: Terminal,
+          badge: "NEW",
+          show: true,
+        },
+        {
+          name: "Users",
+          path: "/users",
+          icon: Users,
+          // badge: "8",
+          show: canSeeUsers,
+        },
+        {
+          name: "Departments",
+          path: "/departments",
+          icon: Building2,
+          show: canSeeRoles,
+        },
       ],
     },
     {
@@ -80,26 +119,38 @@ export const Layout: React.FC = () => {
       items: [
         { name: "Reports", path: "/reports", icon: FileText, show: true },
         { name: "Settings", path: "/settings", icon: Settings, show: true },
-        { name: "Automation", path: "/automation", icon: Zap, badge: "BETA", show: true },
+        {
+          name: "Automation",
+          path: "/automation",
+          icon: Zap,
+          badge: "BETA",
+          show: true,
+        },
       ],
     },
     {
       title: "SUPPORT",
       items: [
-        { name: "Security", path: "/security", icon: Shield, show: true},
-        { name: "Help", path: "/help", icon: HelpCircle, show: true},
+        { name: "Security", path: "/security", icon: Shield, show: true },
+        { name: "Help", path: "/help", icon: HelpCircle, show: true },
       ],
     },
   ];
 
-  if (bussiness_member.isLoading) {
+  const { isLoading } = useHydrateBusinessProfile();
+
+  if (bussiness_member.isLoading || isLoading) {
     return (
-      <div className="flex justify-center item-center w-full h-full px-3 py-5">
-        <Loader2 className="w-5 h-5 animate-spin" />
+      <div className="flex flex-col justify-center item-center w-full h-screen px-3 py-5">
+        <div className="flex items-center justify-center">
+          <Loader2 className="w-5 h-5 animate-spin" />
+        </div>
+        <div className="text-center text3xl mt-6">
+          Hold on getting things started for you
+        </div>
       </div>
     );
   }
-
   return (
     <div className="flex h-screen bg-[#F8F9FA] dark:bg-slate-900 text-slate-900 dark:text-slate-100 overflow-hidden font-sans">
       {/* Sidebar */}
@@ -118,7 +169,7 @@ export const Layout: React.FC = () => {
         </div>
 
         <nav className="flex-1 px-4 py-4 space-y-6 overflow-y-auto">
-          {menuGroups.map((group, groupIdx) =>  (
+          {menuGroups.map((group, groupIdx) => (
             <div key={groupIdx}>
               <h3 className="px-3 text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">
                 {group.title}
@@ -126,8 +177,8 @@ export const Layout: React.FC = () => {
               <div className="space-y-1">
                 {group.items.map((item) => {
                   const isActive = location.pathname === item.path;
-                  if(!item.show){
-                    return 
+                  if (!item.show) {
+                    return;
                   }
                   return (
                     <NavLink
@@ -169,7 +220,7 @@ export const Layout: React.FC = () => {
         </nav>
 
         {/* Bottom Card */}
-        <div className="p-4">
+        {/* <div className="p-4">
           <div className="bg-slate-50 dark:bg-slate-800 rounded-xl p-3 border border-slate-100 dark:border-slate-700 mb-3">
             <div className="flex items-center gap-3 mb-3">
               <div className="bg-brand-500 rounded-lg p-1.5 text-white">
@@ -190,7 +241,7 @@ export const Layout: React.FC = () => {
           <p className="text-center text-[10px] text-slate-400 mt-3">
             © 2024 Vyken Security Inc.
           </p>
-        </div>
+        </div> */}
       </aside>
 
       {/* Main Content */}
@@ -261,25 +312,43 @@ export const Layout: React.FC = () => {
               <LogOut className="h-5 w-5" />
             </button>
 
-            <div className="pl-4 flex items-center">
-              {state.user && (
-                <>
-                  <img
-                    src={state.user.avatar}
-                    alt="User"
-                    className="h-10 w-10 rounded-full border-2 border-white dark:border-slate-800 shadow-sm"
-                  />
-                  <div className="ml-3 hidden md:block">
-                    <p className="text-sm font-bold text-slate-900 dark:text-white leading-none">
-                      {state.user.name}
-                    </p>
-                    <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
-                      {state.organization?.name || "Business"}
-                    </p>
-                  </div>
-                </>
-              )}
-            </div>
+            {/* <div className="pt-4">
+              <div className="pl-4 flex gap-x-1 items-center bg-slate-50 dark:bg-slate-800 rounded-xl p-3 border border-slate-100 dark:border-slate-700 mb-3">
+                {state.user && (
+                  <>
+                    <img
+                      src={state.user.avatar}
+                      alt="User"
+                      className="h-10 w-10 rounded-full border-2 border-white dark:border-slate-800 shadow-sm"
+                    />
+                    <div className="ml-3 hidden md:block">
+                      <p className="text-sm font-bold text-slate-900 dark:text-white leading-none">
+                        {state.user.name}
+                      </p>
+                      <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
+                        {state.organization?.name || "Business"}
+                      </p>
+                    </div>
+                    <button>
+                      <ChevronDown className="w-4 h-4 text-slate-400 ml-auto" />
+                    </button>
+                  </>
+                )}
+              </div>
+            </div> */}
+            <OrganizationSwitcher
+              user={{
+                name: state.user?.name ?? "",
+                avatar: state.user?.avatar ?? "",
+              }}
+              currentOrganization={{
+                id: state.organization?.id ?? "",
+                name: state.organization?.name ?? "",
+                image: state.organization?.logo ?? "",
+                reference: state.organization?.reference ?? "",
+                email: state.organization?.email ?? "",
+              }}
+            />
           </div>
         </header>
 

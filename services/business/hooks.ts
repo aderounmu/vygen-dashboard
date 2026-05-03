@@ -23,6 +23,7 @@ import {
   UnassignBusinessRolePermissionsResponse,
   GetBusinessMemberResponse,
   AssignRoleToMemberResponse,
+  GetBusinessMemberProfilesResponse,
 } from "./types";
 
 /* =========================
@@ -45,6 +46,8 @@ export const businessQueryKeys = {
     [...businessQueryKeys.all, "roles", businessId, page, pageSize] as const,
   role: (businessId: string, roleId: string) =>
     [...businessQueryKeys.all, "roles", businessId, roleId] as const,
+  memberProfiles: () =>
+    [...businessQueryKeys.all, "memberProfiles"] as const,
 };
 
 /* =========================
@@ -143,6 +146,15 @@ export const getBusinessMember = async (
   return response.data;
 };
 
+export const getBusinessMemberProfiles =
+  async (): Promise<GetBusinessMemberProfilesResponse> => {
+    const response = await api.get<GetBusinessMemberProfilesResponse>(
+      `/users/business-member-profiles?page=1&pageSize=5000`, // TODO: Remove Hard Coding
+    );
+
+    return response.data;
+  };
+
 /* =========================
    QUERIES
 ========================= */
@@ -205,6 +217,26 @@ export const useGetBusinessMember = (
     queryKey: businessQueryKeys.member(businessId),
     queryFn: () => getBusinessMember(businessId),
     enabled: !!businessId,
+    ...options,
+  });
+};
+
+// Add Pagination
+export const useGetBusinessMemberProfiles = (
+  options?: Omit<
+    UseQueryOptions<
+      GetBusinessMemberProfilesResponse,
+      AxiosError<ApiErrorResponse>
+    >,
+    "queryKey" | "queryFn"
+  >,
+) => {
+  return useQuery<
+    GetBusinessMemberProfilesResponse,
+    AxiosError<ApiErrorResponse>
+  >({
+    queryKey: businessQueryKeys.memberProfiles(),
+    queryFn: getBusinessMemberProfiles,
     ...options,
   });
 };

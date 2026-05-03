@@ -28,6 +28,8 @@ export interface BusinessMember {
   user: User;
 
   business_member_role: BusinessMemberRole;
+
+  business ?: Business
 }
 
 /* =========================
@@ -37,6 +39,8 @@ export interface BusinessMember {
 export type GetBusinessRolesResponse = PaginatedResponse<BusinessRole>;
 
 export type GetBusinessMembersResponse = PaginatedResponse<BusinessMember>;
+
+export type GetBusinessMemberProfilesResponse = PaginatedResponse<BusinessMember>;
 
 export interface Business {
   id: string;

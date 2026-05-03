@@ -20,6 +20,7 @@ import { Register } from "./pages/Register";
 import { useGetBusinesses } from "./services/business/hooks";
 import { useGetUsers } from "./services/user/hooks";
 import { AcceptInvite } from "./pages/AcceptInvite";
+import useHydrateBusinessProfile from "./hooks/useHydrateBusinessProfile";
 
 const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({
   children,
@@ -34,57 +35,61 @@ const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({
 };
 
 const AppRoutes: React.FC = () => {
-  const { state, dispatch } = useStore();
+  // const { state, dispatch } = useStore();
 
-  const business = useGetBusinesses();
-  const user = useGetUsers();
+  // const business = useGetBusinesses();
+  // const user = useGetUsers();
+
+
   //   const user = us
-  React.useEffect(() => {
-    const _business = business.data?.data[0];
-    const _user = user.data?.data[0];
-    //  if(_business && _user){
-    //     dispatch({
-    //        type: 'SET_ORGANIZATION',
-    //        payload: {
-    //           organization: {
-    //             id: _business.id,
-    //             name: _business.name,
-    //             email: _business.email,
-    //             reference: _business.reference
-    //           }
-    //        }
-    //     })
-    //  }
+  // React.useEffect(() => {
+  //   const _business = business.data?.data[0];
+  //   const _user = user.data?.data[0];
+  //   //  if(_business && _user){
+  //   //     dispatch({
+  //   //        type: 'SET_ORGANIZATION',
+  //   //        payload: {
+  //   //           organization: {
+  //   //             id: _business.id,
+  //   //             name: _business.name,
+  //   //             email: _business.email,
+  //   //             reference: _business.reference
+  //   //           }
+  //   //        }
+  //   //     })
+  //   //  }
 
-    //  if(_user){
+  //   //  if(_user){
 
-    //  }
+  //   //  }
 
-    if (_business && _user) {
-      dispatch({
-        type: "LOGIN",
-        payload: {
-          user: {
-            id: _user.id,
-            firstName: _user.first_name,
-            lastName: _user.last_name,
-            name: `${_user.first_name} ${_user.last_name}`,
-            email: _user.email,
-            country: _user.country,
-            department: "Security",
-            avatar: "https://picsum.photos/seed/admin/32/32",
-            status: "Active",
-          },
-          organization: {
-            id: _business.id,
-            name: _business.name,
-            email: _business.email,
-            reference: _business.reference,
-          },
-        },
-      });
-    }
-  }, [business.data, user.data]);
+  //   if (_business && _user) {
+  //     dispatch({
+  //       type: "LOGIN",
+  //       payload: {
+  //         user: {
+  //           id: _user.id,
+  //           firstName: _user.first_name,
+  //           lastName: _user.last_name,
+  //           name: `${_user.first_name} ${_user.last_name}`,
+  //           email: _user.email,
+  //           country: _user.country,
+  //           department: "Security",
+  //           avatar: "https://picsum.photos/seed/admin/32/32",
+  //           status: "Active",
+  //         },
+  //         organization: {
+  //           id: _business.id,
+  //           name: _business.name,
+  //           email: _business.email,
+  //           reference: _business.reference,
+  //         },
+  //       },
+  //     });
+  //   }
+  // }, [business.data, user.data]);
+
+  
 
   return (
     <Routes>
