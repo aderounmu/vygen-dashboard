@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useEffect, useReducer } from "react";
+import { setStoreDispatch } from "../storeDispatch";
 import {
   AIEvent,
   Policy,
@@ -214,6 +215,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({
   children,
 }) => {
   const [state, dispatch] = useReducer(reducer, initialState);
+
+  useEffect(() => { setStoreDispatch(dispatch); }, []);
 
   // Theme Sync
   useEffect(() => {

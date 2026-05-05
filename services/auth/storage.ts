@@ -18,7 +18,7 @@ export const saveSession = async (response: AuthResponse) => {
 export const clearAuthStorage = async () => {
   console.log("Here-----> 56")
 //   await localStorage.deleteItem("token");
-  
+  localStorage.removeItem("selected_business");
   localStorage.removeItem("sessionId");
   localStorage.removeItem("userId");
   localStorage.removeItem("email");

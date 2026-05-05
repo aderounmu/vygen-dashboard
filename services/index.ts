@@ -1,6 +1,9 @@
-import axios, { AxiosError, InternalAxiosRequestConfig } from "axios";
+import axios, { AxiosError, AxiosResponse, InternalAxiosRequestConfig } from "axios";
 // import * as SecureStore from "expo-secure-store";
 import { ApiErrorResponse } from "./types";
+import { clearAuthStorage } from "./auth/storage";
+import queryClient from "../queryClient";
+import { storeDispatch } from "../storeDispatch";
 
 export const BASE_URL = import.meta.env.VITE_API_URL
 
@@ -26,7 +29,28 @@ api.interceptors.request.use(
 
     return config;
   },
-  (error: AxiosError<ApiErrorResponse>) => Promise.reject(error)
+  (error: AxiosError<ApiErrorResponse>) => {
+    return Promise.reject(error);
+  }
+);
+
+api.interceptors.response.use(
+  (response: AxiosResponse) => response,
+  (error: AxiosError<ApiErrorResponse>) => {
+    console.error("Response error:", error.response?.status, error.response?.data);
+
+    if (
+      error.response?.status === 400 &&
+      error.response?.data?.error === "Session expired. Login again to continue"
+    ) {
+      console.error("Session expired, logging out");
+      clearAuthStorage();
+      queryClient.clear();
+      storeDispatch({ type: "LOGOUT" });
+    }
+
+    return Promise.reject(error);
+  }
 );
 
 export default api;
