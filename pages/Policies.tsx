@@ -780,7 +780,7 @@ export const Policies: React.FC = () => {
             <form
               onSubmit={(e) => {
                 e.preventDefault();
-                handleUpsertPlatform;
+                handleUpsertPlatform(e);
               }}
               className="p-6 space-y-4"
             >
