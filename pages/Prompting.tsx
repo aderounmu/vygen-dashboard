@@ -258,7 +258,7 @@ export const Prompting: React.FC = () => {
             <form
               onSubmit={(e) => {
                 e.preventDefault();
-                handleValidate;
+                handleValidate(e);
               }}
               className="space-y-4"
             >

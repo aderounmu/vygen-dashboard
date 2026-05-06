@@ -33,8 +33,9 @@ const DepartmentUpsertForm = ({
   const togglePermission = (permission: BusinessPermission) => {
     setFormData(prev => ({
       ...prev,
-      permissions: prev.permissions.includes(permission)
-        ? prev.permissions.filter(p => p !== permission)
+      permissions: prev.permissions?.filter(p => p.slug === permission.slug).length >= 1 
+      //prev.permissions.includes(permission) 
+        ? prev.permissions.filter(p => p.slug !== permission.slug)
         : [...prev.permissions, permission]
     }));
   };
