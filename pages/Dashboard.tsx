@@ -300,16 +300,16 @@ export const Dashboard: React.FC = () => {
                  </div> */}
             </div>
             <div className="flex items-center gap-2">
-              <button className="px-3 py-1.5 border border-slate-200 dark:border-slate-600 rounded-lg text-xs font-medium text-slate-600 dark:text-slate-300 flex items-center">
+              {/* <button className="px-3 py-1.5 border border-slate-200 dark:border-slate-600 rounded-lg text-xs font-medium text-slate-600 dark:text-slate-300 flex items-center">
                 <Filter className="w-3 h-3 mr-1.5" /> Filter
-              </button>
+              </button> */}
               <button className="p-1.5 border border-slate-200 dark:border-slate-600 rounded-lg text-slate-600 dark:text-slate-300">
                 <MoreHorizontal className="w-4 h-4" />
               </button>
             </div>
           </div>
 
-          <div className="h-[300px]">
+          <div className="h-75">
             <ResponsiveContainer width="100%" height="100%">
               <AreaChart data={trendData}>
                 <defs>
@@ -376,9 +376,9 @@ export const Dashboard: React.FC = () => {
             <h3 className="text-lg font-bold text-slate-900 dark:text-white">
               Top Tools
             </h3>
-            <button className="px-3 py-1.5 border border-slate-200 dark:border-slate-600 rounded-lg text-xs font-medium text-slate-600 dark:text-slate-300">
+            {/* <button className="px-3 py-1.5 border border-slate-200 dark:border-slate-600 rounded-lg text-xs font-medium text-slate-600 dark:text-slate-300">
               Weekly <ChevronDown className="w-3 h-3 inline ml-1" />
-            </button>
+            </button> */}
           </div>
           <div>
             <h2 className="text-3xl font-bold text-slate-900 dark:text-white">
@@ -452,9 +452,9 @@ export const Dashboard: React.FC = () => {
             <h3 className="text-lg font-bold text-slate-900 dark:text-white">
               Data Types
             </h3>
-            <button className="px-3 py-1.5 border border-slate-200 dark:border-slate-600 rounded-lg text-xs font-medium text-slate-600 dark:text-slate-300">
+            {/* <button className="px-3 py-1.5 border border-slate-200 dark:border-slate-600 rounded-lg text-xs font-medium text-slate-600 dark:text-slate-300">
               Monthly <ChevronDown className="w-3 h-3 inline ml-1" />
-            </button>
+            </button> */}
           </div>
 
           <div className="grid grid-cols-3 gap-2 mb-6">
