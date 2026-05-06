@@ -95,13 +95,13 @@ export const Layout: React.FC = () => {
           icon: ShieldAlert,
           show: canSeePolicy,
         },
-        {
-          name: "Prompting",
-          path: "/prompting",
-          icon: Terminal,
-          badge: "NEW",
-          show: true,
-        },
+        // {
+        //   name: "Prompting",
+        //   path: "/prompting",
+        //   icon: Terminal,
+        //   badge: "NEW",
+        //   show: true,
+        // },
         {
           name: "Users",
           path: "/users",
@@ -223,8 +223,8 @@ export const Layout: React.FC = () => {
         </nav>
 
         {/* Bottom Card */}
-        {/* <div className="p-4">
-          <div className="bg-slate-50 dark:bg-slate-800 rounded-xl p-3 border border-slate-100 dark:border-slate-700 mb-3">
+        <div className="p-4">
+          {/* <div className="bg-slate-50 dark:bg-slate-800 rounded-xl p-3 border border-slate-100 dark:border-slate-700 mb-3">
             <div className="flex items-center gap-3 mb-3">
               <div className="bg-brand-500 rounded-lg p-1.5 text-white">
                 <Shield className="w-4 h-4" />
@@ -237,14 +237,22 @@ export const Layout: React.FC = () => {
               </div>
               <ChevronDown className="w-4 h-4 text-slate-400 ml-auto" />
             </div>
-          </div>
-          <button className="w-full py-2.5 px-4 bg-white border border-slate-200 text-slate-900 text-sm font-semibold rounded-xl hover:bg-slate-50 transition-colors shadow-sm dark:bg-slate-800 dark:border-slate-700 dark:text-white dark:hover:bg-slate-700">
-            Upgrade Plan
+          </div> */}
+          <button
+            onClick={() => {
+              clearAuthStorage();
+              dispatch({ type: "LOGOUT" });
+              queryClient.clear();
+            }}
+            className="w-full flex gap-x-5 justify-items-center py-2.5 px-4 bg-white border border-slate-200 text-slate-900 text-sm font-semibold rounded-xl hover:bg-slate-50 transition-colors shadow-sm dark:bg-slate-800 dark:border-slate-700 dark:text-white dark:hover:bg-slate-700"
+          >
+            <LogOut className="h-5 w-5" /> <p>Logout</p>
           </button>
+        
           <p className="text-center text-[10px] text-slate-400 mt-3">
             © 2024 Vyken Security Inc.
           </p>
-        </div> */}
+        </div>
       </aside>
 
       {/* Main Content */}
@@ -274,7 +282,7 @@ export const Layout: React.FC = () => {
           </div>
 
           <div className="ml-4 flex items-center space-x-2">
-            <button
+            {/* <button
               onClick={() =>
                 dispatch({ type: "SET_THEME", payload: !state.isDarkMode })
               }
@@ -289,7 +297,7 @@ export const Layout: React.FC = () => {
 
             <button className="p-2.5 text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200 rounded-full hover:bg-white dark:hover:bg-slate-800 transition-all">
               <Gift className="h-5 w-5" />
-            </button>
+            </button> */}
 
             <div className="relative">
               <button className="p-2.5 text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200 rounded-full hover:bg-white dark:hover:bg-slate-800 transition-all relative">
@@ -300,22 +308,21 @@ export const Layout: React.FC = () => {
               </button>
             </div>
 
-            <button className="p-2.5 text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200 rounded-full hover:bg-white dark:hover:bg-slate-800 transition-all">
+            {/* <button className="p-2.5 text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200 rounded-full hover:bg-white dark:hover:bg-slate-800 transition-all">
               <PlusCircle className="h-5 w-5" />
-            </button>
+            </button> */}
 
-            <button
+            {/* <button
               onClick={() => {
                 clearAuthStorage();
                 dispatch({ type: "LOGOUT" });
                 queryClient.clear();
-
               }}
               className="p-2.5 text-slate-500 hover:text-red-600 dark:text-slate-400 dark:hover:text-red-400 rounded-full hover:bg-white dark:hover:bg-slate-800 transition-all"
               title="Logout"
             >
               <LogOut className="h-5 w-5" />
-            </button>
+            </button> */}
 
             {/* <div className="pt-4">
               <div className="pl-4 flex gap-x-1 items-center bg-slate-50 dark:bg-slate-800 rounded-xl p-3 border border-slate-100 dark:border-slate-700 mb-3">
