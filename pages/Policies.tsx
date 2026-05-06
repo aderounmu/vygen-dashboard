@@ -307,10 +307,12 @@ export const Policies: React.FC = () => {
 
     if (config.data_type === "email" && config.metadata?.domains) {
       item.domains = config.metadata.domains.join(", ");
+      item.data_type = "email";
     }
 
     if (config.is_custom_config) {
       item.name = config.data_type;
+      item.data_type = "custom";
       item.custom_pattern = config.metadata?.rules
         ? config.metadata.rules[0]
         : "";
