@@ -30,6 +30,7 @@ import { useGetBusinessMember } from "@/services/business/hooks";
 import { useHasPermission } from "@/hooks/usePermission";
 import useHydrateBusinessProfile from "@/hooks/useHydrateBusinessProfile";
 import { OrganizationSwitcher } from "./OrganizationPicker";
+import { useQueryClient } from "@tanstack/react-query";
 
 export const Layout: React.FC = () => {
   const {
@@ -74,6 +75,8 @@ export const Layout: React.FC = () => {
     ],
     state?.organization?.id ?? "",
   );
+
+  const queryClient = useQueryClient();
 
   const menuGroups = [
     {
@@ -305,6 +308,8 @@ export const Layout: React.FC = () => {
               onClick={() => {
                 clearAuthStorage();
                 dispatch({ type: "LOGOUT" });
+                queryClient.clear();
+
               }}
               className="p-2.5 text-slate-500 hover:text-red-600 dark:text-slate-400 dark:hover:text-red-400 rounded-full hover:bg-white dark:hover:bg-slate-800 transition-all"
               title="Logout"

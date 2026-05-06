@@ -95,6 +95,12 @@ const reducer = (state: AppState, action: Action): AppState => {
         user: null,
         organization: null,
         isAuthenticated: false,
+        users: [],
+        events: [],
+        policies: [],
+        departments: [],
+        platforms: [],
+        notifications: [],
       };
     case "REGISTER":
       return {

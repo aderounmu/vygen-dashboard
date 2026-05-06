@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate, useLocation, Link } from 'react-router-dom';
 import { useStore } from '../context/Store';
 import { Shield, Lock, Mail, ArrowRight, Loader2 } from 'lucide-react';
 import { useLogin } from '@/services/auth/hook';
@@ -16,8 +16,10 @@ export const Login: React.FC = () => {
   
   const { dispatch } = useStore();
   const navigate = useNavigate();
+  const location = useLocation();
+  const from = (location.state as { from?: Location })?.from;
   
-
+  console.log(from, "login from location")
 
   const login = localStorage.getItem("sessionId");
   //Find a way to get user Info and organization info etc to store
@@ -26,7 +28,8 @@ export const Login: React.FC = () => {
       type: 'SET_AUTHENTICATION',
       payload: null
     })
-    navigate('/');
+    // navigate('/');
+    navigate(from ? `${from.pathname}${from.search ?? ''}` : '/');
   }
 
   const loginService = useLogin({
@@ -55,7 +58,8 @@ export const Login: React.FC = () => {
             }
           }
           });
-          navigate('/');
+          console.log(from ? `${from.pathname}${from.search ?? ''}` : '/')
+          navigate(from ? `${from.pathname}${from.search ?? ''}` : '/');
      },
      failureFn: (error) => {
         const message = ""
