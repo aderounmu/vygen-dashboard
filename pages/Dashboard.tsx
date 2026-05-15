@@ -1,4 +1,8 @@
-import React, { useMemo } from "react";
+import React, { useMemo, useState } from "react";
+import { DayPicker, type DateRange } from "react-day-picker";
+import "react-day-picker/style.css";
+import { format } from "date-fns";
+import { toast } from "sonner";
 import {
   AreaChart,
   Area,
@@ -31,7 +35,9 @@ import { RiskLevel } from "../types";
 import {
   useGetBusinesses,
   useGetBusinessMemberProfiles,
+  useGenerateBusinessReport,
 } from "@/services/business/hooks";
+import { downloadBusinessReportCsv } from "@/utils";
 import {
   useGetHighRiskCount,
   useGetTopDataTypes,
@@ -49,14 +55,47 @@ export const Dashboard: React.FC = () => {
 
   const randomColor = () => `hsl(${Math.floor(Math.random() * 360)}, 70%, 55%)`;
 
+  const [range, setRange] = useState<DateRange | undefined>();
+  const [isCalendarOpen, setIsCalendarOpen] = useState(false);
+
+  const generateReport = useGenerateBusinessReport({
+    successFn: (data, variables) => {
+      downloadBusinessReportCsv(
+        data,
+        variables.params.startDate,
+        variables.params.endDate,
+      );
+      toast.success("Report generated successfully");
+    },
+    failureFn: (error) => {
+      toast.error(error.response?.data?.error ?? "Failed to generate report");
+    },
+  });
+
+  const handleGenerateReport = () => {
+    if (!range?.from || !range?.to) {
+      toast.error("Please select a start and end date");
+      setIsCalendarOpen(true);
+      return;
+    }
+
+    generateReport.mutate({
+      businessId: state.organization?.id ?? "",
+      params: {
+        startDate: format(range.from, "yyyy-MM-dd"),
+        endDate: format(range.to, "yyyy-MM-dd"),
+      },
+    });
+  };
+
+  const rangeLabel =
+    range?.from && range?.to
+      ? `${format(range.from, "MMM d")} - ${format(range.to, "MMM d")}`
+      : range?.from
+        ? `${format(range.from, "MMM d")} - ...`
+        : "Select date range";
+
   console.log("Dashboard <!---->");
-
-  
-  
-
-  
-
-  
 
   const timeTrend = useGetTrends(state.organization?.id ?? "");
 
@@ -70,7 +109,6 @@ export const Dashboard: React.FC = () => {
 
   const topDatatypes = useGetTopDataTypes(state.organization?.id ?? "");
   //   const user = us
-  
 
   // Calculate Metrics on the fly based on events state
   const metrics = useMemo(() => {
@@ -163,7 +201,6 @@ export const Dashboard: React.FC = () => {
   //   ];
 
   if (
-    
     topDatatypes.isLoading ||
     timeTrend.isLoading ||
     riskyPrompt.isLoading ||
@@ -185,24 +222,74 @@ export const Dashboard: React.FC = () => {
         <h1 className="text-2xl font-bold text-slate-900 dark:text-white">
           Dashboard
         </h1>
-        {/* Hiding Filters */}
-        {/* <div className="flex items-center gap-3">
-             <div className="flex items-center px-4 py-2 bg-white dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700 text-sm font-medium text-slate-600 dark:text-slate-300 shadow-sm cursor-pointer hover:bg-slate-50 transition-colors">
+
+        <div className="flex items-center gap-5">
+          <div className="flex items-center gap-3">
+            <div className="text-sm font-medium text-slate-600 dark:text-slate-300">
+              Select Report Date Range:
+            </div>
+            <div className="relative">
+              <div
+                onClick={() => setIsCalendarOpen((open) => !open)}
+                className="flex items-center px-4 py-2 bg-white dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700 text-sm font-medium text-slate-600 dark:text-slate-300 shadow-sm cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors"
+              >
                 <Calendar className="w-4 h-4 mr-2 text-slate-400" />
-                Oct 18 - Nov 18
-             </div>
-             <div className="flex items-center px-4 py-2 bg-white dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700 text-sm font-medium text-slate-600 dark:text-slate-300 shadow-sm cursor-pointer hover:bg-slate-50 transition-colors">
-                Monthly
-             </div>
-             <button className="flex items-center px-4 py-2 bg-white dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700 text-sm font-medium text-slate-600 dark:text-slate-300 shadow-sm hover:bg-slate-50 transition-colors">
-                <Filter className="w-4 h-4 mr-2" />
-                Filter
-             </button>
-             <button className="flex items-center px-4 py-2 bg-white dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700 text-sm font-medium text-slate-600 dark:text-slate-300 shadow-sm hover:bg-slate-50 transition-colors">
-                <Download className="w-4 h-4 mr-2" />
-                Export
-             </button>
-        </div> */}
+                {rangeLabel}
+              </div>
+
+              {isCalendarOpen && (
+                <>
+                  <div
+                    className="fixed inset-0 z-40"
+                    onClick={() => setIsCalendarOpen(false)}
+                  />
+                  <div className="md:w-max absolute right-0 mt-2 z-50 bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-xl p-4">
+                    <DayPicker
+                      mode="range"
+                      numberOfMonths={2}
+                      selected={range}
+                      onSelect={setRange}
+                      captionLayout="dropdown"
+                      style={
+                        {
+                          "--rdp-accent-color": "#4f46e5",
+                          "--rdp-accent-background-color": "#eef2ff1A",
+                        } as React.CSSProperties
+                      }
+                    />
+                    <div className="flex justify-end gap-2 pt-2 border-t border-slate-100 dark:border-slate-700">
+                      <button
+                        onClick={() => setRange(undefined)}
+                        className="px-3 py-1.5 text-sm font-medium text-slate-500 hover:text-slate-700 dark:hover:text-slate-300"
+                      >
+                        Clear
+                      </button>
+                      <button
+                        onClick={() => setIsCalendarOpen(false)}
+                        className="px-3 py-1.5 text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 rounded-lg"
+                      >
+                        Done
+                      </button>
+                    </div>
+                  </div>
+                </>
+              )}
+            </div>
+          </div>
+
+          <button
+            onClick={handleGenerateReport}
+            disabled={generateReport.isPending}
+            className="flex items-center px-4 py-2 bg-indigo-600 hover:bg-indigo-700 disabled:opacity-60 disabled:cursor-not-allowed rounded-lg text-sm font-semibold text-white shadow-sm shadow-indigo-600/30 transition-colors"
+          >
+            {generateReport.isPending ? (
+              <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+            ) : (
+              <Download className="w-4 h-4 mr-2" />
+            )}
+            Generate Report
+          </button>
+        </div>
       </div>
 
       {/* KPI Cards Row */}

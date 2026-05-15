@@ -133,6 +133,22 @@ const AppRoutes: React.FC = () => {
             </div>
           }
         />
+        <Route
+          path="security"
+          element={
+            <div className="p-8 text-center text-slate-500">
+              Security Settings (Coming Soon)
+            </div>
+          }
+        />
+        <Route
+          path="automation"
+          element={
+            <div className="p-8 text-center text-slate-500">
+              Automation (Coming Soon)
+            </div>
+          }
+        />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Route>
     </Routes>

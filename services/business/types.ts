@@ -1,4 +1,5 @@
 import { User } from "../auth/type";
+import { PromptEvent } from "../prompt/types";
 import {
   ApiSuccessResponse,
   BaseTimestamps,
@@ -173,3 +174,35 @@ export interface AssignedRole {
 
 export interface AssignRoleToMemberResponse
   extends ApiSuccessResponse<AssignedRole[]> {}
+
+/* =========================
+   DELETE RESPONSES
+========================= */
+
+export type DeleteBusinessResponse = null | ApiSuccessResponse<null>;
+
+export type DeleteBusinessMemberResponse = null | ApiSuccessResponse<null>;
+
+export type DeleteBusinessRoleResponse = null | ApiSuccessResponse<null>;
+
+/* =========================
+   BUSINESS REPORT
+========================= */
+
+export interface BusinessReportCount {
+  name: string;
+  count: number;
+}
+
+export interface GetBusinessReportRequest {
+  startDate: string;
+  endDate: string;
+}
+
+export interface GetBusinessReportResponse {
+  total_prompts: number;
+  ai_tools: BusinessReportCount[];
+  actions: BusinessReportCount[];
+  reasons: BusinessReportCount[];
+  events: PromptEvent[];
+}

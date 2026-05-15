@@ -17,10 +17,15 @@ import {
 } from "lucide-react";
 import UserEditModal from "@/components/UserEditModal";
 import UserInviteModal from "@/components/UserInviteModal";
-import { useGetBusinessMembers } from "@/services/business/hooks";
+import {
+  useDeleteBusinessMember,
+  useDeleteBusinessRole,
+  useGetBusinessMembers,
+} from "@/services/business/hooks";
 import { AppDispatch } from "recharts/types/state/store";
 import { useHasPermission } from "@/hooks/usePermission";
 import Pagination from "@/components/Pagination";
+import { toast } from "sonner";
 
 export const Users: React.FC = () => {
   const {
@@ -57,6 +62,20 @@ export const Users: React.FC = () => {
     state?.organization?.id ?? "",
   );
 
+  const canDeleteUser = useHasPermission(
+    ["can-delete-business-member"],
+    state?.organization?.id ?? "",
+  );
+
+  const deleteUser = useDeleteBusinessMember({
+    successFn: (_, variables) => {
+      toast.success(`User Deleted successfullly`);
+    },
+    failureFn(error, variables, context) {
+      toast.error(`Error occured deleting User`);
+    },
+  });
+
   console.log(isLoading, "isLoading<!----!>");
   // Form State
   const [formData, setFormData] = useState<Partial<User>>({
@@ -68,12 +87,12 @@ export const Users: React.FC = () => {
     status: "Active",
   });
 
-  const handleOpenModal = (user?: User & {roleId: string}) => {
+  const handleOpenModal = (user?: User & { roleId: string }) => {
     if (user) {
       setEditingUser(user);
       setFormData({
         ...user,
-        department: user.roleId
+        department: user.roleId,
       });
     } else {
       setEditingUser(null);
@@ -152,9 +171,20 @@ export const Users: React.FC = () => {
               email: user.email,
               organizationId: user.business_id,
               country: user.user.country,
-              roleId: user.business_member_role.role_id
-            }) as User & {roleId: string},
+              roleId: user.business_member_role.role_id,
+            }) as User & { roleId: string },
         );
+
+  function handleDelete(id: string): void {
+      if (
+      window.confirm(
+        "Are you sure you want to delete this user? This will affect their access to the organization.",
+      )
+    ) {
+      // dispatch({ type: "DELETE_DEPARTMENT", payload: id });
+      deleteUser.mutate({ businessMemberId: id, businessId: state?.organization?.id ?? "" });
+    }
+  }
 
   return (
     <div className="space-y-6 animate-in fade-in duration-300">
@@ -280,7 +310,7 @@ export const Users: React.FC = () => {
                         </td>
                         <td className="px-6 py-4 text-right">
                           <div className="flex items-center justify-end gap-2">
-                          {/* <div className="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity"> */}
+                            {/* <div className="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity"> */}
                             {canAssignRoleUser && (
                               <button
                                 onClick={() => handleOpenModal(user)}
@@ -289,12 +319,14 @@ export const Users: React.FC = () => {
                                 <Edit2 className="w-4 h-4" />
                               </button>
                             )}
-                            {/* <button 
-                                        onClick={() => handleDelete(user.id)}
-                                        className="p-1.5 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-                                    >
-                                        <Trash2 className="w-4 h-4" />
-                                    </button> */}
+                            {canDeleteUser && (
+                              <button
+                                onClick={() => handleDelete(user.id)}
+                                className="p-1.5 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                              >
+                                <Trash2 className="w-4 h-4" />
+                              </button>
+                            )}
                           </div>
                         </td>
                       </tr>
@@ -324,15 +356,14 @@ export const Users: React.FC = () => {
         )}
 
         {/* Pagination */}
-        
 
         <Pagination
-         isLoading={isLoading}
-        page={page} 
-        itemsPerPage={itemsPerPage}
-        totalItems={totalItems}
-        setPage={setPage}
-        totalPages={totalPages}
+          isLoading={isLoading}
+          page={page}
+          itemsPerPage={itemsPerPage}
+          totalItems={totalItems}
+          setPage={setPage}
+          totalPages={totalPages}
         ></Pagination>
       </div>
 

@@ -21,21 +21,21 @@ const DepartmentCreateModal = (props:{
     const [roleId , setRoleId] = React.useState<string>("")
     const createBusinessRole = useCreateBusinessRole({
         successFn: (data) => {
-            toast.success("Department created successfully")
+            // toast.success("Department created successfully")
         },
         failureFn: (error) => {
             const message = ""
-            toast.error(`Error creating department`)
+            // toast.error(`Error creating department`)
         }
     })
     const addPermissionToRole = useAssignBusinessRolePermissions(
         {
         successFn: (data) => {
-            toast.success("Department created successfully")
+            // toast.success("Department created successfully")
         },
         failureFn: (error) => {
             const message = ""
-            toast.error(`Error creating department`)
+            // toast.error(`Error creating department`)
         }
         }
     )
@@ -50,7 +50,7 @@ const DepartmentCreateModal = (props:{
             console.log(data.data[0].id)
             const role_id = data.data[0].id;
             setRoleId(role_id)
-            addPermissionToRole.mutate({
+            await addPermissionToRole.mutateAsync({
                 businessId : state?.organization?.id ?? "",
                 roleId: role_id,
                 payload: {

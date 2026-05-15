@@ -18,10 +18,14 @@ import { Department, Permission } from "../types";
 import { BusinessPermission } from "@/services/business/types";
 import DepartmentCreateModal from "@/components/DepartmentCreateModal";
 import DepartmentEditModal from "@/components/DepartmentEditModal";
-import { useGetBusinessRoles } from "@/services/business/hooks";
+import {
+  useDeleteBusinessRole,
+  useGetBusinessRoles,
+} from "@/services/business/hooks";
 import { AppDispatch } from "recharts/types/state/store";
 import { useHasPermission } from "@/hooks/usePermission";
 import Pagination from "@/components/Pagination";
+import { toast } from "sonner";
 
 export const Departments: React.FC = () => {
   const {
@@ -47,6 +51,11 @@ export const Departments: React.FC = () => {
     ["can-create-business-roles"],
     state?.organization?.id ?? "",
   );
+
+  const canDeleteRoles = useHasPermission(
+    ["can-delete-business-role"],
+    state?.organization?.id ?? "",
+  );
   const [formData, setFormData] = useState({
     name: "",
     description: "",
@@ -62,6 +71,15 @@ export const Departments: React.FC = () => {
     itemsPerPage,
     page,
   );
+
+  const deleteRole = useDeleteBusinessRole({
+    successFn: (_, variables) => {
+      toast.success(`Department Deleted successfullly`);
+    },
+    failureFn(error, variables, context) {
+      toast.error(`Error occured deleting Department`);
+    },
+  });
 
   const totalPages = React.useMemo(
     () => data?.total_pages ?? 0,
@@ -140,7 +158,8 @@ export const Departments: React.FC = () => {
         "Are you sure you want to delete this department? This will affect users assigned to it.",
       )
     ) {
-      dispatch({ type: "DELETE_DEPARTMENT", payload: id });
+      // dispatch({ type: "DELETE_DEPARTMENT", payload: id });
+      deleteRole.mutate({ roleId: id, businessId: state?.organization?.id ?? "" });
     }
   };
 
@@ -180,7 +199,7 @@ export const Departments: React.FC = () => {
             </span>
           </div>
           <p className="text-2xl font-bold text-slate-900 dark:text-white">
-            { totalItems}
+            {totalItems}
           </p>
         </div>
         {/* <div className="bg-white dark:bg-slate-800 p-4 rounded-2xl border border-slate-100 dark:border-slate-700 shadow-sm">
@@ -293,12 +312,14 @@ export const Departments: React.FC = () => {
                             <Edit2 className="w-4 h-4" />
                           </button>
                         )}
-                        {/* <button
-                          onClick={() => handleDelete(dept.id)}
-                          className="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-all"
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </button> */}
+                        {canDeleteRoles && (
+                          <button
+                            onClick={() => handleDelete(dept.id)}
+                            className="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-all"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        )}
                       </div>
                     </td>
                   </tr>

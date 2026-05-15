@@ -23,6 +23,7 @@ import {
   LogOut,
   Terminal,
   Loader2,
+  LucideProps,
 } from "lucide-react";
 import { Action, AppState, useStore } from "../context/Store";
 import { clearAuthStorage } from "@/services/auth/storage";
@@ -78,7 +79,22 @@ export const Layout: React.FC = () => {
 
   const queryClient = useQueryClient();
 
-  const menuGroups = [
+  const menuGroups : {
+    title: string;
+    items: ({
+        name: string;
+        path: string;
+        icon: React.ForwardRefExoticComponent<Omit<LucideProps, "ref"> & React.RefAttributes<SVGSVGElement>>;
+        show: boolean;
+        badge?: undefined;
+    } | {
+        name: string;
+        path: string;
+        icon: React.ForwardRefExoticComponent<Omit<LucideProps, "ref"> & React.RefAttributes<SVGSVGElement>>;
+        badge: string;
+        show: boolean;
+    })[];
+}[] = [
     {
       title: "GENERAL",
       items: [
@@ -120,7 +136,7 @@ export const Layout: React.FC = () => {
     {
       title: "TOOLS",
       items: [
-        { name: "Reports", path: "/reports", icon: FileText, show: true },
+        // { name: "Reports", path: "/reports", icon: FileText, show: true },
         { name: "Settings", path: "/settings", icon: Settings, show: true },
         {
           name: "Automation",
@@ -258,7 +274,7 @@ export const Layout: React.FC = () => {
       {/* Main Content */}
       <div className="flex-1 flex flex-col min-w-0 overflow-hidden bg-[#F8F9FA] dark:bg-slate-900">
         {/* Top Header */}
-        <header className="h-20 flex items-center justify-between px-8 bg-[#F8F9FA] dark:bg-slate-900">
+        <header className="h-20 flex items-center pb-8 justify-between px-8 bg-[#F8F9FA] dark:bg-slate-900">
           <div className="flex-1 flex items-center max-w-xl">
             <div className="relative w-full">
               <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">

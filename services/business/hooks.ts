@@ -24,6 +24,11 @@ import {
   GetBusinessMemberResponse,
   AssignRoleToMemberResponse,
   GetBusinessMemberProfilesResponse,
+  DeleteBusinessResponse,
+  DeleteBusinessMemberResponse,
+  DeleteBusinessRoleResponse,
+  GetBusinessReportRequest,
+  GetBusinessReportResponse,
 } from "./types";
 
 /* =========================
@@ -48,6 +53,14 @@ export const businessQueryKeys = {
     [...businessQueryKeys.all, "roles", businessId, roleId] as const,
   memberProfiles: () =>
     [...businessQueryKeys.all, "memberProfiles"] as const,
+  report: (businessId: string, startDate: string, endDate: string) =>
+    [
+      ...businessQueryKeys.all,
+      "report",
+      businessId,
+      startDate,
+      endDate,
+    ] as const,
 };
 
 /* =========================
@@ -155,6 +168,45 @@ export const getBusinessMemberProfiles =
     return response.data;
   };
 
+export const deleteBusiness = async (
+  businessId: string,
+): Promise<DeleteBusinessResponse> => {
+  const response = await api.delete<DeleteBusinessResponse>(
+    `/business/${businessId}`,
+  );
+  return response.data;
+};
+
+export const deleteBusinessMember = async (
+  businessId: string,
+  businessMemberId: string,
+): Promise<DeleteBusinessMemberResponse> => {
+  const response = await api.delete<DeleteBusinessMemberResponse>(
+    `/business/${businessId}/members/${businessMemberId}`,
+  );
+  return response.data;
+};
+
+export const deleteBusinessRole = async (
+  businessId: string,
+  roleId: string,
+): Promise<DeleteBusinessRoleResponse> => {
+  const response = await api.delete<DeleteBusinessRoleResponse>(
+    `/business/${businessId}/roles/${roleId}`,
+  );
+  return response.data;
+};
+
+export const getBusinessReport = async (
+  businessId: string,
+  params: GetBusinessReportRequest,
+): Promise<GetBusinessReportResponse> => {
+  const response = await api.get<GetBusinessReportResponse>(
+    `/business/${businessId}/report?startDate=${params.startDate}&endDate=${params.endDate}`,
+  );
+  return response.data;
+};
+
 /* =========================
    QUERIES
 ========================= */
@@ -218,6 +270,54 @@ export const useGetBusinessMember = (
     queryFn: () => getBusinessMember(businessId),
     enabled: !!businessId,
     ...options,
+  });
+};
+
+export const useGetBusinessReport = (
+  businessId: string,
+  params: GetBusinessReportRequest,
+  options?: Omit<
+    UseQueryOptions<GetBusinessReportResponse, AxiosError<ApiErrorResponse>>,
+    "queryKey" | "queryFn"
+  >,
+) => {
+  return useQuery<GetBusinessReportResponse, AxiosError<ApiErrorResponse>>({
+    queryKey: businessQueryKeys.report(
+      businessId,
+      params.startDate,
+      params.endDate,
+    ),
+    queryFn: () => getBusinessReport(businessId, params),
+    enabled: !!businessId && !!params.startDate && !!params.endDate,
+    ...options,
+  });
+};
+
+export interface GenerateBusinessReportVariables {
+  businessId: string;
+  params: GetBusinessReportRequest;
+}
+
+export const useGenerateBusinessReport = (
+  effect?: ApiHookEffect<
+    GetBusinessReportResponse,
+    GenerateBusinessReportVariables,
+    AxiosError<ApiErrorResponse>
+  >,
+) => {
+  return useMutation<
+    GetBusinessReportResponse,
+    AxiosError<ApiErrorResponse>,
+    GenerateBusinessReportVariables
+  >({
+    mutationFn: ({ businessId, params }) =>
+      getBusinessReport(businessId, params),
+    onError: (error, variables, context) => {
+      effect?.failureFn?.(error, variables, context);
+    },
+    onSuccess: (data, variables, context) => {
+      effect?.successFn?.(data, variables, context);
+    },
   });
 };
 
@@ -496,6 +596,120 @@ export const useAssignRoleToMember = (
 
       await queryClient.invalidateQueries({
         queryKey: ["business"],
+      });
+
+      effect?.successFn?.(data, variables, context);
+    },
+  });
+};
+
+export const useDeleteBusiness = (
+  effect?: ApiHookEffect<
+    DeleteBusinessResponse,
+    string,
+    AxiosError<ApiErrorResponse>
+  >,
+) => {
+  const queryClient = useQueryClient();
+
+  return useMutation<
+    DeleteBusinessResponse,
+    AxiosError<ApiErrorResponse>,
+    string
+  >({
+    mutationFn: (businessId) => deleteBusiness(businessId),
+    onError: (error, variables, context) => {
+      effect?.failureFn?.(error, variables, context);
+    },
+    onSuccess: async (data, variables, context) => {
+      await queryClient.invalidateQueries({
+        queryKey: businessQueryKeys.lists(),
+      });
+      await queryClient.invalidateQueries({
+        queryKey: businessQueryKeys.detail(variables),
+      });
+
+      effect?.successFn?.(data, variables, context);
+    },
+  });
+};
+
+export interface DeleteBusinessMemberVariables {
+  businessId: string;
+  businessMemberId: string;
+}
+
+export const useDeleteBusinessMember = (
+  effect?: ApiHookEffect<
+    DeleteBusinessMemberResponse,
+    DeleteBusinessMemberVariables,
+    AxiosError<ApiErrorResponse>
+  >,
+) => {
+  const queryClient = useQueryClient();
+
+  return useMutation<
+    DeleteBusinessMemberResponse,
+    AxiosError<ApiErrorResponse>,
+    DeleteBusinessMemberVariables
+  >({
+    mutationFn: ({ businessId, businessMemberId }) =>
+      deleteBusinessMember(businessId, businessMemberId),
+    onError: (error, variables, context) => {
+      effect?.failureFn?.(error, variables, context);
+    },
+    onSuccess: async (data, variables, context) => {
+      await queryClient.invalidateQueries({
+        queryKey: businessQueryKeys.members(variables.businessId),
+      });
+      await queryClient.invalidateQueries({
+        queryKey: businessQueryKeys.memberProfiles(),
+      });
+      await queryClient.invalidateQueries({
+        queryKey: ["members"],
+      });
+
+      effect?.successFn?.(data, variables, context);
+    },
+  });
+};
+
+export interface DeleteBusinessRoleVariables {
+  businessId: string;
+  roleId: string;
+}
+
+export const useDeleteBusinessRole = (
+  effect?: ApiHookEffect<
+    DeleteBusinessRoleResponse,
+    DeleteBusinessRoleVariables,
+    AxiosError<ApiErrorResponse>
+  >,
+) => {
+  const queryClient = useQueryClient();
+
+  return useMutation<
+    DeleteBusinessRoleResponse,
+    AxiosError<ApiErrorResponse>,
+    DeleteBusinessRoleVariables
+  >({
+    mutationFn: ({ businessId, roleId }) =>
+      deleteBusinessRole(businessId, roleId),
+    onError: (error, variables, context) => {
+      effect?.failureFn?.(error, variables, context);
+    },
+    onSuccess: async (data, variables, context) => {
+      await queryClient.invalidateQueries({
+        queryKey: businessQueryKeys.roles(variables.businessId),
+      });
+      await queryClient.invalidateQueries({
+        queryKey: businessQueryKeys.role(
+          variables.businessId,
+          variables.roleId,
+        ),
+      });
+      await queryClient.invalidateQueries({
+        queryKey: businessQueryKeys.members(variables.businessId),
       });
 
       effect?.successFn?.(data, variables, context);
