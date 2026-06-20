@@ -55,15 +55,15 @@ export interface Business {
   updated_at: string;
 }
 
-export interface BusinessMember {
-  id: string;
-  user_id: string;
-  business_id: string;
-  email: string;
-  CreatedAt: string;
-  UpdatedAt: string;
-  DeletedAt: string | null;
-}
+// export interface BusinessMember {
+//   id: string;
+//   user_id: string;
+//   business_id: string;
+//   email: string;
+//   CreatedAt: string;
+//   UpdatedAt: string;
+//   DeletedAt: string | null;
+// }
 
 export interface BusinessPermission {
   name: string;

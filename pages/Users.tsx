@@ -172,6 +172,7 @@ export const Users: React.FC = () => {
               organizationId: user.business_id,
               country: user.user.country,
               roleId: user.business_member_role.role_id,
+              lastLogin: user.user.last_login,
             }) as User & { roleId: string },
         );
 
@@ -266,6 +267,7 @@ export const Users: React.FC = () => {
                     <th className="px-6 py-4">User</th>
                     <th className="px-6 py-4">Department</th>
                     <th className="px-6 py-4">Status</th>
+                    <th className="px-6 py-4">Last Login</th>
                     <th className="px-6 py-4 text-right">Actions</th>
                   </tr>
                 </thead>
@@ -307,6 +309,11 @@ export const Users: React.FC = () => {
                               {user.status}
                             </span>
                           </div>
+                        </td>
+                         <td className="px-6 py-4">
+                          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-900/30 dark:text-blue-300 dark:border-blue-800">
+                            {user.lastLogin ? new Date(user.lastLogin).toLocaleString() : "Never"}
+                          </span>
                         </td>
                         <td className="px-6 py-4 text-right">
                           <div className="flex items-center justify-end gap-2">

@@ -49,6 +49,8 @@ export interface User {
   avatar: string;
   status: 'Active' | 'Inactive';
   organizationId?: string;
+
+  lastLogin?: string; // ISO String or null
 }
 
 export interface AIEvent {

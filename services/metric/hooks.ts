@@ -94,6 +94,20 @@ export const getTopDataTypes = async (
   return response.data;
 };
 
+
+// =========================
+// Top Data Types
+// =========================
+
+export const getTopUsers = async (
+  businessId: string
+): Promise<any> => {
+  const response = await api.get<any>(
+    `/business/${businessId}/analytics/top-users`
+  );
+  return response.data;
+}
+
 // =========================
 // HOOKS
 // =========================
