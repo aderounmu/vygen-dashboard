@@ -3,6 +3,10 @@ import ReactDOM from 'react-dom/client';
 import './index.css';
 import App from './App';
 
+import { QueryClientProvider } from '@tanstack/react-query'
+import { Toaster } from 'sonner';
+import queryClient from './queryClient';
+
 const rootElement = document.getElementById('root');
 if (!rootElement) {
   throw new Error("Could not find root element to mount to");
@@ -11,6 +15,9 @@ if (!rootElement) {
 const root = ReactDOM.createRoot(rootElement);
 root.render(
   <React.StrictMode>
-    <App />
+     <QueryClientProvider client={queryClient}>
+        <Toaster position="top-center" />
+        <App />
+     </QueryClientProvider>
   </React.StrictMode>
 );

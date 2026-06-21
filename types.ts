@@ -1,3 +1,5 @@
+import { BusinessPermission } from "./services/business/types";
+
 export enum RiskLevel {
   LOW = 'LOW',
   MEDIUM = 'MEDIUM',
@@ -24,13 +26,15 @@ export interface Department {
   id: string;
   name: string;
   description: string;
-  permissions: Permission[];
+  permissions: BusinessPermission[];
 }
 
 export interface Organization {
   id: string;
   name: string;
-  domain: string;
+  email: string;
+  reference: string;
+  domain?: string;
   logo?: string;
 }
 
@@ -45,6 +49,8 @@ export interface User {
   avatar: string;
   status: 'Active' | 'Inactive';
   organizationId?: string;
+
+  lastLogin?: string; // ISO String or null
 }
 
 export interface AIEvent {
@@ -70,6 +76,10 @@ export interface Policy {
   action: ActionType;
   priority: number;
   is_enabled: boolean;
+
+  domains?: string;
+
+  custom_pattern?: string;
 }
 
 export interface DashboardMetrics {
@@ -77,6 +87,9 @@ export interface DashboardMetrics {
   sensitivePercentage: number;
   highRiskCount: number;
   preventedLeaks: number;
+
+  metadata?: { domains: Array<string> }
+
 }
 
 export interface AIPlatform {
