@@ -38,6 +38,16 @@ export interface GetTopToolsResponse {
 }
 
 // =========================
+// Top Tools
+// =========================
+
+export interface GetTopUserResponse {
+  data: Record<string, number>; // e.g. { chatgpt: 42 }
+}
+
+
+
+// =========================
 // Top Data Types
 // =========================
 

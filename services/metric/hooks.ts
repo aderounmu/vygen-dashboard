@@ -11,6 +11,7 @@ import {
   GetHighRiskCountResponse,
   GetTopToolsResponse,
   GetTopDataTypesResponse,
+  GetTopUserResponse,
 } from "./types";
 
 // =========================
@@ -34,6 +35,9 @@ export const metricQueryKeys = {
 
   topDataTypes: (businessId: string) =>
     [...metricQueryKeys.base, "top-data-types", businessId] as const,
+
+   topUsers: (businessId: string) =>
+    [...metricQueryKeys.base, "top-users", businessId] as const,
 };
 
 // =========================
@@ -101,8 +105,8 @@ export const getTopDataTypes = async (
 
 export const getTopUsers = async (
   businessId: string
-): Promise<any> => {
-  const response = await api.get<any>(
+): Promise<GetTopUserResponse> => {
+  const response = await api.get<GetTopUserResponse>(
     `/business/${businessId}/analytics/top-users`
   );
   return response.data;
@@ -188,6 +192,22 @@ export const useGetTopDataTypes = (
   return useQuery({
     queryKey: metricQueryKeys.topDataTypes(businessId),
     queryFn: () => getTopDataTypes(businessId),
+    enabled: !!businessId,
+  });
+};
+
+
+export const useGetTopUsers = (
+  businessId: string,
+  effect?: ApiHookEffect<
+    GetTopUserResponse,
+    unknown,
+    AxiosError<any>
+  >
+) => {
+  return useQuery({
+    queryKey: metricQueryKeys.topUsers(businessId),
+    queryFn: () => getTopUsers(businessId),
     enabled: !!businessId,
   });
 };

@@ -42,6 +42,7 @@ import {
   useGetHighRiskCount,
   useGetTopDataTypes,
   useGetTopTools,
+  useGetTopUsers,
   useGetTotalPrompts,
   useGetTrends,
 } from "@/services/metric/hooks";
@@ -108,6 +109,8 @@ export const Dashboard: React.FC = () => {
   //   const prompts = useGet
 
   const topDatatypes = useGetTopDataTypes(state.organization?.id ?? "");
+
+  const topUser = useGetTopUsers(state.organization?.id ?? "");
   //   const user = us
 
   // Calculate Metrics on the fly based on events state
@@ -200,12 +203,40 @@ export const Dashboard: React.FC = () => {
   //     { name: 'PII', value: 90, color: '#a855f7' }, // Purple
   //   ];
 
+  const topUserData = useMemo(() => {
+    let total = 0;
+
+    if (!topUser?.data || !topUser?.data?.data) return { value: [], total };
+
+    // const counts: Record<string, number> = {};
+    // state.events.forEach(e => { counts[e.tool] = (counts[e.tool] || 0) + 1 });
+    // return Object.entries(counts).map(([name, value]) => ({ name, value })).sort((a,b) => b.value - a.value).slice(0, 7);
+    const value = Object.entries(topUser.data.data)
+      .map(([name, value]) => {
+        return {
+          name,
+          value,
+        };
+      })
+      .sort((a, b) => b.value - a.value)
+      .slice(0, 7);
+
+    value.forEach(({ value }) => {
+      total += value;
+    });
+
+    return { value, total };
+
+    // return value
+  }, [state.events, topUser?.data]);
+
   if (
     topDatatypes.isLoading ||
     timeTrend.isLoading ||
     riskyPrompt.isLoading ||
     totalPrompt.isLoading ||
     topTools.isLoading ||
+    topUser.isLoading ||
     currentData.isLoading
   ) {
     return (
@@ -674,6 +705,80 @@ export const Dashboard: React.FC = () => {
                 }
               </tbody>
             </table>
+          </div>
+        </div>
+      </div>
+
+      <div>
+        <div className="bg-white dark:bg-slate-800 p-6 rounded-3xl shadow-sm border border-slate-100 dark:border-slate-700/50">
+          <div className="flex justify-between items-center mb-6">
+            <h3 className="text-lg font-bold text-slate-900 dark:text-white">
+              Top Users
+            </h3>
+            {/* <button className="px-3 py-1.5 border border-slate-200 dark:border-slate-600 rounded-lg text-xs font-medium text-slate-600 dark:text-slate-300">
+              Weekly <ChevronDown className="w-3 h-3 inline ml-1" />
+            </button> */}
+          </div>
+          <div>
+            <h2 className="text-3xl font-bold text-slate-900 dark:text-white">
+              {topUserData.total}
+            </h2>
+            {/* <div className="flex items-center gap-2 mt-1 mb-6">
+                    <span className="text-emerald-500 text-sm font-semibold flex items-center">
+                        8.3% <ArrowUpRight className="w-3 h-3 ml-1" />
+                    </span>
+                    <span className="text-sm text-slate-400">+749 increased</span>
+              </div> */}
+          </div>
+          <div className="h-55">
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart
+                data={topUserData.value}
+                barSize={24}
+                margin={{ top: 10, right: 8, left: 0, bottom: 0 }}
+              >
+                <defs>
+                  <linearGradient
+                    id="toolBarGradient"
+                    x1="0"
+                    y1="0"
+                    x2="0"
+                    y2="1"
+                  >
+                    <stop offset="0%" stopColor="#6366f1" stopOpacity={0.95} />
+                    <stop offset="100%" stopColor="#818cf8" stopOpacity={0.6} />
+                  </linearGradient>
+                </defs>
+                <XAxis
+                  dataKey="name"
+                  stroke="#94a3b8"
+                  fontSize={11}
+                  tickLine={false}
+                  axisLine={false}
+                  dy={6}
+                  interval={0}
+                />
+                <Tooltip
+                  cursor={{ fill: "rgba(99, 102, 241, 0.06)" }}
+                  contentStyle={{
+                    color: "#6366f1",
+                    borderRadius: "12px",
+                    border: "none",
+                    boxShadow: "0 10px 15px -3px rgb(0 0 0 / 0.1)",
+                  }}
+                  labelStyle={{ fontWeight: 600, color: "black" }}
+                  formatter={(value, _name, item) => [
+                    value as number,
+                    item?.payload?.name,
+                  ]}
+                />
+                <Bar
+                  dataKey="value"
+                  radius={[6, 6, 0, 0]}
+                  fill="url(#toolBarGradient)"
+                />
+              </BarChart>
+            </ResponsiveContainer>
           </div>
         </div>
       </div>
